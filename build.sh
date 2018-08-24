@@ -1,17 +1,15 @@
 #!/bin/bash
 set -e
-PROJECT=$(basename $(dirname $(readlink -f $0)))
-
-docker run --rm -v $(pwd):/go/src/github.com/titpetric/$PROJECT -w /go/src/github.com/titpetric/$PROJECT -e GOOS=${OS} -e GOARCH=${ARCH} -e CGO_ENABLED=0 -e GOARM=7 titpetric/golang dep ensure
+PROJECT=$(<.project)
 
 NAMES=$(ls cmd/* -d | xargs -n1 basename)
 for NAME in $NAMES; do
-	OSES=${OSS:-"linux darwin windows"}
-	ARCHS=${ARCHS:-"amd64 386"}
+	OSS=${OSS:-"linux"}
+	ARCHS=${ARCHS:-"amd64"}
 	for ARCH in $ARCHS; do
-		for OS in $OSES; do
+		for OS in $OSS; do
 			echo $OS $ARCH $NAME
-			docker run --rm -v $(pwd):/go/src/github.com/titpetric/$PROJECT -w /go/src/github.com/titpetric/$PROJECT -e GOOS=${OS} -e GOARCH=${ARCH} -e CGO_ENABLED=0 -e GOARM=7 titpetric/golang go build -o build/${NAME}-${OS}-${ARCH} cmd/${NAME}/*.go
+			docker run --rm -v $(pwd):/go/src/github.com/$PROJECT -w /go/src/github.com/$PROJECT -e GOOS=${OS} -e GOARCH=${ARCH} -e CGO_ENABLED=0 -e GOARM=7 titpetric/golang go build -o build/${NAME}-${OS}-${ARCH} cmd/${NAME}/*.go
 			if [ $? -eq 0 ]; then
 				echo OK
 			fi

@@ -1,15 +1,13 @@
-package main
+package crontab
 
 import (
 	"github.com/go-chi/chi"
 	"github.com/go-chi/chi/middleware"
 	"github.com/go-chi/cors"
-
-	"github.com/titpetric/go-web-crontab/crontab"
 )
 
 // MountRoutes will register API routes
-func MountRoutes(r chi.Router, opts *RouteOptions, cron *crontab.Crontab) {
+func MountRoutes(r chi.Router, config *configuration, cron *Crontab) {
 	// CORS for local development...
 	cors := cors.New(cors.Options{
 		AllowedOrigins:   []string{"*"},
@@ -20,7 +18,7 @@ func MountRoutes(r chi.Router, opts *RouteOptions, cron *crontab.Crontab) {
 	})
 	r.Use(cors.Handler)
 
-	if opts.enableLogging {
+	if config.http.logging {
 		r.Use(middleware.Logger)
 	}
 

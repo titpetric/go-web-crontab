@@ -35,6 +35,14 @@ func (Crontab) New(db *factory.DB) (*Crontab, error) {
 	return cron, nil
 }
 
+func (cron *Crontab) Start() {
+	startJobs(cron, cron.Jobs.jobs)
+}
+
+func (cron *Crontab) Shutdown() {
+	shutdownJobs()
+}
+
 func New(db *factory.DB) (*Crontab, error) {
 	return Crontab{}.New(db)
 }
