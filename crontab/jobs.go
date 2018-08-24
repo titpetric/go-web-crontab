@@ -19,7 +19,6 @@ func startJobs(c *Crontab, jobs []JobItem) {
 			}
 		}
 
-		log.Println(job.Name, job.GetSchedule())
 		if err := _jobs_cron.AddFunc(job.GetSchedule(), runFunc); err != nil {
 			panic(err)
 		}
