@@ -1,7 +1,6 @@
 package crontab
 
 import (
-	"log"
 	"os"
 	"strings"
 	"time"
