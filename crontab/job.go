@@ -1,8 +1,8 @@
 package crontab
 
 import (
-	"os"
 	"log"
+	"os"
 	"strings"
 	"time"
 
@@ -35,7 +35,6 @@ func (job *JobItem) GetSchedule() string {
 }
 
 func (job *JobItem) Run(cron *Crontab) error {
-	log.Println("Running job", job.Name)
 	if !job.CanRun() {
 		return nil
 	}
@@ -51,7 +50,9 @@ func (job *JobItem) Run(cron *Crontab) error {
 	cmd := exec.Command(command[0], command[1:]...)
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
-	cmd.Run()
+	if err := cmd.Start(); err != nil {
+		return errors.Wrap(err, "Can't run command")
+	}
 
 	done := make(chan error, 1)
 	go func() {

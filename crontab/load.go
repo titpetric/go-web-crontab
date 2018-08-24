@@ -74,7 +74,7 @@ func (cron *Crontab) loadConfig(filename, scriptPath string) error {
 			cancel:   make(chan bool, 1),
 			Name:     lineExp[len(lineExp)-1],
 			Filename: filename,
-			Command:  command,
+			Command:  "./" + lineExp[len(lineExp)-1],
 			Hostname: lineExp[0],
 			Schedule: schedule,
 		}

@@ -14,7 +14,9 @@ func startJobs(c *Crontab, jobs []JobItem) {
 	for idx, _ := range jobs {
 		job := jobs[idx]
 		runFunc := func() {
-			job.Run(c)
+			if err := job.Run(c); err != nil {
+				log.Printf("Unexpected error when running job: %+v", err)
+			}
 		}
 
 		log.Println(job.Name, job.GetSchedule())
