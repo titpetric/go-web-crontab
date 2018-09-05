@@ -1,15 +1,16 @@
 #!/bin/bash
 set -e
-PROJECT=$(<.project)
-
-NAMES=$(ls cmd/* -d | xargs -n1 basename)
+NAMES=$(find cmd/* -type d | xargs -n1 basename)
+if [ ! -z "$1" ]; then
+	NAMES="$1"
+fi
 for NAME in $NAMES; do
 	OSS=${OSS:-"linux"}
 	ARCHS=${ARCHS:-"amd64"}
 	for ARCH in $ARCHS; do
 		for OS in $OSS; do
 			echo $OS $ARCH $NAME
-			docker run --rm -v $(pwd):/go/src/github.com/$PROJECT -w /go/src/github.com/$PROJECT -e GOOS=${OS} -e GOARCH=${ARCH} -e CGO_ENABLED=0 -e GOARM=7 titpetric/golang go build -o build/${NAME}-${OS}-${ARCH} cmd/${NAME}/*.go
+			GOOS=${OS} GOARCH=${ARCH} CGO_ENABLED=0 GOARM=7 go build -o build/${NAME}-${OS}-${ARCH} cmd/${NAME}/*.go
 			if [ $? -eq 0 ]; then
 				echo OK
 			fi
