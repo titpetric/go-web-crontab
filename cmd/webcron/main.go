@@ -16,9 +16,9 @@ func main() {
 	go NewMonitor(config.monitorInterval)
 
 	if err := crontab.Init(); err != nil {
-		log.Fatalf("Error initializing crm: %+v", err)
+		log.Fatalf("Error initializing: %+v", err)
 	}
 	if err := crontab.Start(); err != nil {
-		log.Fatalf("Error starting/running crm: %+v", err)
+		log.Fatalf("Error starting/running: %+v", err)
 	}
 }
