@@ -12,6 +12,8 @@ import (
 
 	"github.com/titpetric/factory"
 	"github.com/titpetric/factory/resputil"
+
+	migrations "github.com/titpetric/go-web-crontab/db"
 )
 
 func Init() error {
@@ -41,7 +43,7 @@ func Init() error {
 		},
 	})
 
-	return nil
+	return migrations.Migrate(db)
 }
 
 func Start() error {
