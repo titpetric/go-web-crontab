@@ -1,0 +1,34 @@
+workspace:
+  base: /go-web-crontab
+
+kind: pipeline
+name: crust
+
+steps:
+- name: build
+  image: crusttech/crust-builder:latest
+  pull: always
+  environment:
+    CGO_ENABLED: 0
+    GOOS: linux
+    GOARCH: amd64
+    CI: travis
+  commands:
+  - go fmt ./...
+  - cd db && statik -p mysql -m -Z -f -src=schema/mysql && cd ..
+  - wait-for-it.sh -t 60 --strict webcron-db:3306 -- echo "database service is up"
+  - make test
+  - make build
+
+services:
+- name: webcron-db
+  pull: always
+  image: percona:8.0
+  command: [ "--innodb_lock_wait_timeout=2" ]
+  ports:
+    - 3306
+  environment:
+    MYSQL_ROOT_PASSWORD: bRxJ37sJ6Qu4
+    MYSQL_DATABASE: webcron
+    MYSQL_USER: webcron
+    MYSQL_PASSWORD: webcron
