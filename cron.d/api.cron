@@ -5,10 +5,10 @@
 # server, (seconds,) minute, hour, day, month, dayofweek, user, script
 # (optionally @reboot cron syntax and @copy just for copy)
 
-api1		30	*	*	*	*	*	root	api_stats
-api1		*/5	*	*	*	*	*	root	ava_stats
-api1		*/10	*	*	*	*	*	root	api_weather
+api1 30   * * * * * root api_stats
+api1 */5  * * * * * root ava_stats
+api1 */10 * * * * * root api_weather
 
-@api		*	*	*	*	*	*	root	api_logtiming
+@api *    * * * * * root api_logtiming
 
-api1		30 	*	*	*	*	*	root	api_healthcheck
+api1 30   * * * * * root api_healthcheck

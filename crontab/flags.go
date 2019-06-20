@@ -5,24 +5,23 @@ import (
 	"github.com/pkg/errors"
 )
 
-type (
-	configuration struct {
-		http struct {
-			addr    string
-			logging bool
-			pretty  bool
-			tracing bool
-		}
-		db struct {
-			dsn      string
-			profiler string
-		}
-		crontab struct {
-			configPath string
-			scriptPath string
-		}
+type configuration struct {
+	http struct {
+		addr    string
+		logging bool
+		pretty  bool
+		tracing bool
 	}
-)
+
+	db struct {
+		dsn      string
+		profiler string
+	}
+	crontab struct {
+		configPath string
+		scriptPath string
+	}
+}
 
 var config *configuration
 
@@ -46,6 +45,7 @@ func Flags(prefix ...string) {
 	if config != nil {
 		return
 	}
+
 	config = new(configuration)
 
 	p := func(s string) string {
