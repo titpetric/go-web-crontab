@@ -2,61 +2,78 @@ package crontab
 
 import (
 	"github.com/pkg/errors"
+	"github.com/titpetric/go-web-crontab/logger"
 )
 
+// CrontabJobs
 type CrontabJobs struct {
 	cron *Crontab
-	jobs []JobItem
+	jobs []*JobItem
 }
 
+// New creates a new cronjob
 func (CrontabJobs) New(cron *Crontab) (*CrontabJobs, error) {
 	jobs := &CrontabJobs{
 		cron: cron,
-		jobs: []JobItem{},
+		jobs: []*JobItem{},
 	}
+
 	return jobs, nil
 }
 
-func (c *CrontabJobs) List() ([]JobItem, error) {
-	jobs := []JobItem{}
-	err := c.cron.db.Select(&jobs, "select name, description from jobs order by name asc")
-	// update jobs array from database
-	for _, job := range jobs {
-		for k, _ := range c.jobs {
-			if c.jobs[k].Name == job.Name {
-				c.jobs[k].Description = job.Description
+// List ??
+func (c *CrontabJobs) List() ([]*JobItem, error) {
+	dbjobs := []*JobItem{}
+	err := c.cron.db.Select(&dbjobs,
+		"select name, description from jobs order by name asc",
+	)
+
+	// update job descriptions based on database
+	for _, dbjob := range dbjobs {
+		for _, job := range c.jobs {
+			if job.Name == dbjob.Name {
+				job.Description = dbjob.Description
 				break
 			}
 		}
 	}
+
 	return c.jobs, err
 }
 
+// Save isn't implemented
 func (c *CrontabJobs) Save(job *JobItem) error {
 	// @todo: implement save job
 	return errors.New("Not implemented")
 }
 
-func (c *CrontabJobs) Get(id string) (*JobItem, error) {
+// Delete isn't implemented
+func (c *CrontabJobs) Delete(id string) error {
+	// @todo: implement delete job
+	return errors.New("Not implemented")
+}
+
+// Get gets a job from the name
+func (c *CrontabJobs) Get(name string) (*JobItem, error) {
 	jobs, err := c.List()
 	if err != nil {
 		return nil, err
 	}
-	for k, _ := range jobs {
-		if jobs[k].Name == id {
-			return &jobs[k], nil
+
+	for _, job := range jobs {
+		if job.Name == name {
+			return job, nil
 		}
 	}
-	return nil, errors.New("No matching job: " + id)
+
+	return nil, errors.New("No matching job: " + name)
 }
 
-func (c *CrontabJobs) Logs(id string) ([]Log, error) {
-	logs := []Log{}
-	err := c.cron.db.Select(&logs, "select name, description from logs order by name asc")
-	return logs, err
-}
-
-func (c *CrontabJobs) Delete(id string) error {
-	// @todo: implement delete job
-	return errors.New("Not implemented")
+// Logs returns all logs for a cronjob
+func (c *CrontabJobs) Logs(name string) ([]*logger.LogEntry, error) {
+	logs := []*logger.LogEntry{}
+	return logs, c.cron.db.Select(&logs,
+		"SELECT name, description FROM logs WHICH name = ? ORDER BY name ASC",
+		name,
+	)
 }

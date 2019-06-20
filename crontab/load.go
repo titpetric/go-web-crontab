@@ -13,6 +13,7 @@ import (
 	"github.com/pkg/errors"
 )
 
+// Load loads the configs
 func (cron *Crontab) Load(configPath, scriptPath string) error {
 	configs, err := filepath.Glob(configPath)
 	if err != nil {
@@ -70,7 +71,7 @@ func (cron *Crontab) loadConfig(filename, scriptPath string) error {
 			schedule = strings.Join(lineExp[1:7], " ")
 		}
 
-		job := JobItem{
+		job := &JobItem{
 			cancel:   make(chan bool, 1),
 			Name:     lineExp[len(lineExp)-1],
 			Filename: filename,

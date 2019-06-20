@@ -28,6 +28,7 @@ func Init() error {
 	if err != nil {
 		return err
 	}
+
 	switch config.db.profiler {
 	case "stdout":
 		db.Profiler = &factory.Database.ProfilerStdout
