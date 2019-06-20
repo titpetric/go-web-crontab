@@ -6,6 +6,7 @@ require (
 	github.com/SentimensRG/sigctx v0.0.0-20171003180858-c19b774db63b
 	github.com/apex/log v1.1.0
 	github.com/davecgh/go-spew v1.1.0
+	github.com/fatih/color v1.7.0 // indirect
 	github.com/go-chi/chi v4.0.2+incompatible
 	github.com/go-chi/cors v1.0.0
 	github.com/goware/statik v0.2.0

@@ -6,9 +6,8 @@ import (
 	"time"
 
 	"github.com/apex/log"
+	"github.com/apex/log/handlers/cli"
 	"github.com/apex/log/handlers/json"
-	"github.com/apex/log/handlers/text"
-	"github.com/davecgh/go-spew/spew"
 	"github.com/jmoiron/sqlx/types"
 	"github.com/pkg/errors"
 	"github.com/titpetric/factory"
@@ -58,10 +57,10 @@ func NewLog(job string) *Log {
 			Handler: json.New(j),
 		},
 		stdoutLog: &log.Logger{
-			Handler: text.New(os.Stdout),
+			Handler: cli.New(os.Stdout),
 		},
 		stderrLog: &log.Logger{
-			Handler: text.New(os.Stderr),
+			Handler: cli.New(os.Stderr),
 		},
 	}
 
@@ -98,8 +97,12 @@ func (l *Log) stderr(p []byte) (n int, err error) {
 }
 
 func (l *Log) flushStderr() {
+	if len(l.errbuf) == 0 {
+		return
+	}
+
 	// Print the last buffer
-	l.stderrLog.WithField("output", "stderr").
+	l.stderrLog.WithField("time", time.Now().Format(time.StampMicro)).
 		Warn(string(l.errbuf))
 
 	l.dbLog.WithField("output", "stderr").
@@ -127,8 +130,12 @@ func (l *Log) stdout(p []byte) (n int, err error) {
 }
 
 func (l *Log) flushStdout() {
+	if len(l.outbuf) == 0 {
+		return
+	}
+
 	// Print the last buffer
-	l.stderrLog.WithField("output", "stdout").
+	l.stderrLog.WithField("time", time.Now().Format(time.StampMicro)).
 		Info(string(l.outbuf))
 
 	l.dbLog.WithField("output", "stdout").
@@ -172,8 +179,6 @@ func (l *Log) Finish(db *factory.DB, err error) (*LogEntry, error) {
 	if err := dbLog.Output.Scan(l.jsonWriter.String()); err != nil {
 		return nil, errors.Wrap(err, "Couldn't scan JSON")
 	}
-
-	spew.Dump(dbLog)
 
 	// Insert the JSON into the database
 	return dbLog, db.Insert("logs", dbLog)

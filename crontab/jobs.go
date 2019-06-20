@@ -13,9 +13,8 @@ func startJobs(c *Crontab, jobs []*JobItem) {
 	_jobsCron = cron.New()
 	for _, job := range jobs {
 		runFunc := func() {
-			if err := job.Run(c); err != nil {
-				log.Printf("Unexpected error when running job: %+v", err)
-			}
+			// Error is handled already
+			job.Run(c)
 		}
 
 		if err := _jobsCron.AddFunc(job.GetSchedule(), runFunc); err != nil {
