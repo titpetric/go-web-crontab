@@ -14,8 +14,6 @@ steps:
     GOARCH: amd64
     CI: travis
   commands:
-  - go fmt ./...
-  - cd db && statik -p mysql -m -Z -f -src=schema/mysql && cd ..
   - wait-for-it.sh -t 60 --strict webcron-db:3306 -- echo "database service is up"
   - make test
   - make build
