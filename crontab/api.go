@@ -7,10 +7,8 @@ import (
 	"github.com/pkg/errors"
 
 	"github.com/titpetric/factory/resputil"
-	"github.com/titpetric/go-web-crontab/logger"
 )
 
-// API contains methods as HTTP Handlers
 type API struct {
 	List   http.HandlerFunc
 	Get    http.HandlerFunc
@@ -19,93 +17,87 @@ type API struct {
 	Delete http.HandlerFunc
 }
 
-// New returns a new API
 func (API) New(opts *APIOptions) (*API, error) {
 	cron := opts.cron
 
 	api := &API{
 		List: func(w http.ResponseWriter, r *http.Request) {
-			var err error
 			response := &struct {
-				Jobs []*JobItem `json:"jobs"`
+				Jobs []JobItem `json:"jobs"`
 			}{}
 
-			response.Jobs, err = cron.Jobs.List()
-			resputil.JSON(w, err, response)
-		},
-		Get: func(w http.ResponseWriter, r *http.Request) {
-			id := chi.URLParam(r, "id")
-			if id == "" {
-				resputil.JSON(w, errors.New("Missing parameter: id"), nil)
+			request := func() (err error) {
+				response.Jobs, err = cron.Jobs.List()
 				return
 			}
 
-			var err error
+			resputil.JSON(w, request(), response)
+		},
+		Get: func(w http.ResponseWriter, r *http.Request) {
 			response := &struct {
 				Job *JobItem `json:"job"`
 			}{}
 
-			response.Job, err = cron.Jobs.Get(id)
-			resputil.JSON(w, err, response)
+			request := func() (err error) {
+				id := chi.URLParam(r, "id")
+				if id == "" {
+					return errors.New("Missing parameter: id")
+				}
+				response.Job, err = cron.Jobs.Get(id)
+				return
+			}
+
+			resputil.JSON(w, request(), response)
 		},
 		Logs: func(w http.ResponseWriter, r *http.Request) {
-			id := chi.URLParam(r, "id")
-			if id == "" {
-				resputil.JSON(w, errors.New("Missing parameter: id"), nil)
-				return
-			}
-
-			var err error
 			response := &struct {
-				Job  *JobItem           `json:"job"`
-				Logs []*logger.LogEntry `json:"logs"`
+				Job  *JobItem `json:"job"`
+				Logs []Log    `json:"logs"`
 			}{}
 
-			response.Job, err = cron.Jobs.Get(id)
-			if err != nil {
-				resputil.JSON(w, err, nil)
+			request := func() (err error) {
+				id := chi.URLParam(r, "id")
+				if id == "" {
+					return errors.New("Missing parameter: id")
+				}
+				response.Job, err = cron.Jobs.Get(id)
+				if err != nil {
+					return err
+				}
+				response.Logs, err = cron.Jobs.Logs(id)
 				return
 			}
 
-			response.Logs, err = cron.Jobs.Logs(id)
-			if err != nil {
-				resputil.JSON(w, err, nil)
-				return
-			}
-
-			resputil.JSON(w, nil, response)
+			resputil.JSON(w, request(), response)
 		},
 		Save: func(w http.ResponseWriter, r *http.Request) {
-			id := chi.URLParam(r, "id")
-			if id == "" {
-				resputil.JSON(w, errors.New("Missing parameter: id"), nil)
-				return
+			response := resputil.Success()
+
+			request := func() (err error) {
+				id := chi.URLParam(r, "id")
+				if id == "" {
+					return errors.New("Missing parameter: id")
+				}
+				// @todo: parse request into a job item
+				item := &JobItem{}
+				return cron.Jobs.Save(item)
 			}
 
-			// @todo: parse request into a job item
-			item := JobItem{}
-			if err := cron.Jobs.Save(&item); err != nil {
-				resputil.JSON(w, err, nil)
-				return
-			}
-
-			resputil.JSON(w, nil, resputil.Success())
+			resputil.JSON(w, request(), response)
 		},
 		Delete: func(w http.ResponseWriter, r *http.Request) {
-			id := chi.URLParam(r, "id")
-			if id == "" {
-				resputil.JSON(w, errors.New("Missing parameter: id"), nil)
-				return
+			response := resputil.Success()
+
+			request := func() (err error) {
+				id := chi.URLParam(r, "id")
+				if id == "" {
+					return errors.New("Missing parameter: id")
+				}
+				return cron.Jobs.Delete(id)
 			}
 
-			if err := cron.Jobs.Delete(id); err != nil {
-				resputil.JSON(w, err, nil)
-				return
-			}
-
-			resputil.JSON(w, nil, resputil.Success())
+			resputil.JSON(w, request(), response)
 		},
 	}
-
 	return api, nil
 }
