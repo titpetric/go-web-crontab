@@ -1,4 +1,1 @@
-ALTER TABLE logs ADD (
-	exit_code  int NOT NULL,
-    output     json NOT NULL
-);
+ALTER TABLE `logs` ADD `output` JSON NOT NULL AFTER `name`, ADD `exit_code` INT NOT NULL AFTER `output`;
