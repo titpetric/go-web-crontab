@@ -1,14 +1,13 @@
 package crontab
 
 import (
-	"os"
 	"strings"
-	"time"
 
 	"os/exec"
 
 	"github.com/pkg/errors"
 	"github.com/titpetric/factory"
+	"github.com/titpetric/go-web-crontab/logger"
 )
 
 type JobItem struct {
@@ -37,35 +36,50 @@ func (job *JobItem) Run(cron *Crontab) error {
 	if !job.CanRun() {
 		return nil
 	}
+
 	defer job.Done()
+
+	// Make a new logger. This takes in the stdout and stderr, log them into
+	// both the application's std{out,err} and, when Finish() is called,
+	// finalizes everything and write it to the database.
+	var jobLog = logger.NewLog(job.Name)
 
 	command := strings.Split(job.Command, " ")
 
-	jobLog := Log{
-		Name:  job.Name,
-		Stamp: time.Now(),
-	}
-
 	cmd := exec.Command(command[0], command[1:]...)
-	cmd.Stdout = os.Stdout
-	cmd.Stderr = os.Stderr
+	cmd.Stdout = jobLog.Stdout()
+	cmd.Stderr = jobLog.Stderr()
+
 	if err := cmd.Start(); err != nil {
+		// Log when a task fails
+		if _, err := jobLog.Finish(cron.db, err); err != nil {
+			return errors.Wrap(err, "Couldn't run job "+job.Name+" and save to db")
+		}
+
 		return errors.Wrap(err, "Can't run command")
 	}
 
-	done := make(chan error, 1)
+	var done = make(chan error, 1)
 	go func() {
 		done <- cmd.Wait()
 	}()
 
 	select {
 	case <-job.cancel:
-		return errors.Wrap(cmd.Process.Kill(), "Killing process "+job.Name)
-	case err := <-done:
-		if err != nil {
-			return errors.Wrap(err, "Unexpected error when running "+job.Name)
+		if err := cmd.Process.Kill(); err != nil {
+			if _, dberr := jobLog.Finish(cron.db, err); dberr != nil {
+				return errors.Wrap(dberr, "Couldn't stop job "+job.Name+" and save to db")
+			}
+
+			return errors.Wrap(err, "Couldn't stop job "+job.Name)
 		}
-		jobLog.Duration = time.Since(jobLog.Stamp)
-		return errors.Wrap(jobLog.save(cron.db), "Can't save "+job.Name+" run to db")
+	case cmdError := <-done:
+		if _, err := jobLog.Finish(cron.db, cmdError); err != nil {
+			return errors.Wrap(err, "Couldn't finish job "+job.Name+" and save to db")
+		}
+
+		return errors.Wrap(cmdError, "Couldn't finish job "+job.Name)
 	}
+
+	return nil
 }
