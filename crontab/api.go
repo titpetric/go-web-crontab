@@ -7,6 +7,7 @@ import (
 	"github.com/pkg/errors"
 
 	"github.com/titpetric/factory/resputil"
+	"github.com/titpetric/go-web-crontab/logger"
 )
 
 type API struct {
@@ -51,8 +52,8 @@ func (API) New(opts *APIOptions) (*API, error) {
 		},
 		Logs: func(w http.ResponseWriter, r *http.Request) {
 			response := &struct {
-				Job  *JobItem `json:"job"`
-				Logs []Log    `json:"logs"`
+				Job  *JobItem          `json:"job"`
+				Logs []logger.LogEntry `json:"logs"`
 			}{}
 
 			request := func() (err error) {
