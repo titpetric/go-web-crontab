@@ -1,29 +1,27 @@
-// +build migrations
+// +build integration
 
 package db
 
 import (
+	"context"
 	"testing"
+	"time"
 
-	"github.com/namsral/flag"
 	"github.com/titpetric/factory"
 )
 
 func TestMigrations(t *testing.T) {
-	if testing.Short() {
-		t.Skip("skipping test in short mode.")
-		return
+	dbOptions := &factory.DatabaseConnectionOptions{
+		DSN:            "webcron:webcron@tcp(webcron-db:3306)/webcron?collation=utf8mb4_general_ci",
+		Logger:         "stdout",
+		Retries:        100,
+		RetryTimeout:   2 * time.Second,
+		ConnectTimeout: 2 * time.Minute,
 	}
-
-	var dsn string
-
-	flag.StringVar(&dsn, "db-dsn", "webcron:webcron@tcp(webcron-db:3306)/webcron?collation=utf8mb4_general_ci", "DSN for database connection")
-	flag.Parse()
-
-	factory.Database.Add("default", dsn)
-	factory.Database.Add("system", dsn)
-
-	db := factory.Database.MustGet()
+	db, err := factory.Database.TryToConnect(context.Background(), "default", dbOptions)
+	if err != nil {
+		t.Fatalf("Error when connecting: %+v", err)
+	}
 	if err := Migrate(db); err != nil {
 		t.Fatalf("Unexpected error: %+v", err)
 	}

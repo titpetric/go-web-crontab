@@ -12,8 +12,6 @@ import (
 	"github.com/goware/statik/fs"
 	"github.com/pkg/errors"
 	"github.com/titpetric/factory"
-
-	"github.com/titpetric/go-web-crontab/db/mysql"
 )
 
 func statements(contents []byte, err error) ([]string, error) {
@@ -24,7 +22,7 @@ func statements(contents []byte, err error) ([]string, error) {
 }
 
 func Migrate(db *factory.DB) error {
-	statikFS, err := fs.New(mysql.Asset)
+	statikFS, err := fs.New(Asset)
 	if err != nil {
 		return errors.Wrap(err, "Error creating statik filesystem")
 	}
@@ -49,7 +47,7 @@ func Migrate(db *factory.DB) error {
 
 	migrate := func(filename string, useLog bool) error {
 		status := migration{
-			Project:  "crm",
+			Project:  "go-web-crontab",
 			Filename: filename,
 		}
 		if useLog {
