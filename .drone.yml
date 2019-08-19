@@ -6,15 +6,18 @@ name: crust
 
 steps:
 - name: build
-  image: crusttech/crust-builder:latest
+  image: golang:1.12-alpine
   pull: always
   environment:
     CGO_ENABLED: 0
+    GOPROXY: https://proxy.golang.org
     GOOS: linux
     GOARCH: amd64
     CI: travis
   commands:
-  - wait-for-it.sh -t 60 --strict webcron-db:3306 -- echo "database service is up"
+  - apk --no-cache add make git
+  - go get -u github.com/goware/statik
+  - statik -p db -m -Z -f -src=db/schema/mysql
   - make test
   - make build
 
