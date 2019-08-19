@@ -5,8 +5,7 @@ all:
 
 test: go.mod
 	go fmt ./...
-	cd db && statik -p mysql -m -Z -f -src=schema/mysql && cd ..
-	go test -v --tags="migrations" ./db/...
+	go test -v --tags="integration" ./...
 
 build:
 	GOOS=linux GOARCH=amd64 CGO_ENABLED=0 go build -o build/webcron-linux-amd64 cmd/webcron/*.go
