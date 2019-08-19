@@ -14,8 +14,8 @@ type (
 			tracing bool
 		}
 		db struct {
-			dsn      string
-			profiler string
+			dsn    string
+			logger string
 		}
 		crontab struct {
 			configPath string
@@ -64,5 +64,5 @@ func Flags(prefix ...string) {
 	flag.BoolVar(&config.http.tracing, p("http-error-tracing"), false, "Return error stack frame")
 
 	flag.StringVar(&config.db.dsn, p("db-dsn"), "webcron:webcron@tcp(db1:3306)/webcron?collation=utf8mb4_general_ci", "DSN for database connection")
-	flag.StringVar(&config.db.profiler, p("db-profiler"), "", "Profiler for DB queries (none, stdout)")
+	flag.StringVar(&config.db.logger, p("db-logger"), "", "Logger for DB queries (none, stdout)")
 }

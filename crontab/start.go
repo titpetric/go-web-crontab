@@ -1,10 +1,12 @@
 package crontab
 
 import (
+	"context"
 	"fmt"
 	"log"
 	"net"
 	"net/http"
+	"time"
 
 	"github.com/SentimensRG/sigctx"
 	"github.com/go-chi/chi"
@@ -22,16 +24,16 @@ func Init() error {
 		return err
 	}
 
-	// start/configure database connection
-	factory.Database.Add("default", config.db.dsn)
-	db, err := factory.Database.Get()
+	dbOptions := &factory.DatabaseConnectionOptions{
+		DSN:            config.db.dsn,
+		Logger:         config.db.logger,
+		Retries:        100,
+		RetryTimeout:   2 * time.Second,
+		ConnectTimeout: 2 * time.Minute,
+	}
+	db, err := factory.Database.TryToConnect(context.Background(), "default", dbOptions)
 	if err != nil {
 		return err
-	}
-	switch config.db.profiler {
-	case "stdout":
-		db.Profiler = &factory.Database.ProfilerStdout
-		// @todo: profiling as an external service?
 	}
 
 	// configure resputil options
@@ -39,7 +41,7 @@ func Init() error {
 		Pretty: config.http.pretty,
 		Trace:  config.http.tracing,
 		Logger: func(err error) {
-			// @todo: error logging
+			log.Printf("Error from request: %+v", err)
 		},
 	})
 
