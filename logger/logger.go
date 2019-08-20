@@ -70,6 +70,12 @@ func NewLog(job string) *Log {
 	return log
 }
 
+func (l *Log) Fields(logger *log.Logger) *log.Entry {
+	return logger.
+		WithField("time", time.Now().Format(time.RFC3339Nano)).
+		WithField("job", l.jobname)
+}
+
 // Stderr returns a struct that implements io.Writer.
 func (l *Log) Stderr() *logErr {
 	return l.logErr
@@ -102,12 +108,8 @@ func (l *Log) flushStderr() {
 		return
 	}
 
-	// Print the last buffer
-	l.stderrLog.WithField("time", time.Now().Format(time.StampMicro)).
-		Warn(string(l.errbuf))
-
-	l.dbLog.WithField("output", "stderr").
-		Warn(string(l.errbuf))
+	l.Fields(l.stderrLog).Warn(string(l.errbuf))
+	l.Fields(l.dbLog).WithField("output", "stderr").Warn(string(l.errbuf))
 
 	// Flush the current buffer
 	l.errbuf = l.errbuf[:0]
@@ -136,11 +138,8 @@ func (l *Log) flushStdout() {
 	}
 
 	// Print the last buffer
-	l.stderrLog.WithField("time", time.Now().Format(time.StampMicro)).
-		Info(string(l.outbuf))
-
-	l.dbLog.WithField("output", "stdout").
-		Info(string(l.outbuf))
+	l.Fields(l.stdoutLog).Info(string(l.outbuf))
+	l.Fields(l.dbLog).WithField("output", "stdout").Info(string(l.outbuf))
 
 	// Flush the current buffer
 	l.outbuf = l.outbuf[:0]
@@ -171,13 +170,13 @@ func (l *Log) Finish(db *factory.DB, err error) (*LogEntry, error) {
 		// Wrap the error
 		err = errors.Wrap(err, "Couldn't finish job "+l.jobname)
 
-		// Log the error to the application's stdout
-		l.stdoutLog.WithField("output", "stdout").
-			Error(err.Error())
+		if err != nil {
+			// Log the error to the application's stderr
+			l.Fields(l.stderrLog).Error(err.Error())
 
-		// Log the error to the database as well
-		l.dbLog.WithField("output", "stderr").
-			Error(err.Error())
+			// Log the error to the database as well
+			l.Fields(l.dbLog).WithField("output", "stderr").Error(err.Error())
+		}
 	}
 
 	// Create the database entry
