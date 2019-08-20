@@ -36,5 +36,8 @@ func (j *JSONBuffer) String() string {
 	j.mu.Lock()
 	defer j.mu.Unlock()
 
-	return "[" + string(j.v[:len(j.v)-1]) + "]"
+	if len(j.v) > 0 {
+		return "[" + string(j.v[:len(j.v)-1]) + "]"
+	}
+	return "[]"
 }
