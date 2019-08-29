@@ -27,6 +27,7 @@ func Start() error {
 
 	dbOptions := &factory.DatabaseConnectionOptions{
 		DSN:            config.db.dsn,
+		DriverName:     "mysql",
 		Logger:         config.db.logger,
 		Retries:        100,
 		RetryTimeout:   2 * time.Second,
