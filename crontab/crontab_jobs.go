@@ -53,7 +53,7 @@ func (c *CrontabJobs) Get(id string) (*JobItem, error) {
 
 func (c *CrontabJobs) Logs(id string) ([]logger.LogEntry, error) {
 	logs := []logger.LogEntry{}
-	err := c.cron.db.Select(&logs, "select name, description from logs order by name asc")
+	err := c.cron.db.Select(&logs, "select * from logs order by name asc")
 	return logs, err
 }
 
