@@ -16,7 +16,7 @@ require (
 	github.com/pkg/errors v0.8.1
 	github.com/robfig/cron v0.0.0-20180505203441-b41be1df6967
 	github.com/stretchr/testify v1.3.0 // indirect
-	github.com/titpetric/factory v0.0.0-20190819090440-ce7ab10f025b
+	github.com/titpetric/factory v0.0.0-20190828134837-8466c9bef13f
 	golang.org/x/net v0.0.0-20190311183353-d8887717615a // indirect
 	google.golang.org/appengine v1.1.0 // indirect
 )

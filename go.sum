@@ -42,8 +42,8 @@ github.com/sony/sonyflake v0.0.0-20181109022403-6d5bd6181009/go.mod h1:dVvZuWJd1
 github.com/stretchr/objx v0.1.0/go.mod h1:HFkY916IF+rwdDfMAkV7OtwuqBVzrE8GR6GFx+wExME=
 github.com/stretchr/testify v1.3.0 h1:TivCn/peBQ7UY8ooIcPgZFpTNSz0Q2U6UrFlUfqbe0Q=
 github.com/stretchr/testify v1.3.0/go.mod h1:M5WIy9Dh21IEIfnGCwXGc5bZfKNJtfHm1UVUgZn+9EI=
-github.com/titpetric/factory v0.0.0-20190819090440-ce7ab10f025b h1:Uk3LzD9OiceBcpGsn9lR9augSsRLDvbpbD20XiqWaIc=
-github.com/titpetric/factory v0.0.0-20190819090440-ce7ab10f025b/go.mod h1:VFd2XRrQZoX9cOxpeZezKpOlXDwU/dbRejKLjwP+xY8=
+github.com/titpetric/factory v0.0.0-20190828134837-8466c9bef13f h1:sTgdEUlmmNSU3QKe8n20jR26zYEKw6ciSuj919XobV4=
+github.com/titpetric/factory v0.0.0-20190828134837-8466c9bef13f/go.mod h1:VFd2XRrQZoX9cOxpeZezKpOlXDwU/dbRejKLjwP+xY8=
 golang.org/x/crypto v0.0.0-20190308221718-c2843e01d9a2/go.mod h1:djNgcEr1/C05ACkg1iLfiJU5Ep61QUkGW8qpdssI0+w=
 golang.org/x/net v0.0.0-20190311183353-d8887717615a h1:oWX7TPOiFAMXLq8o0ikBYfCJVlRHBcsciT5bXOrH628=
 golang.org/x/net v0.0.0-20190311183353-d8887717615a/go.mod h1:t9HGtf8HONx5eT2rtn7q6eTqICYqUVnKs3thJo3Qplg=

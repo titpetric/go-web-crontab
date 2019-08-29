@@ -1,7 +1,6 @@
 package crontab
 
 import (
-	"context"
 	"fmt"
 	"log"
 	"net"
@@ -18,7 +17,9 @@ import (
 	migrations "github.com/titpetric/go-web-crontab/db"
 )
 
-func Init() error {
+func Start() error {
+	var ctx = sigctx.New()
+
 	// validate configuration
 	if err := config.Validate(); err != nil {
 		return err
@@ -31,7 +32,7 @@ func Init() error {
 		RetryTimeout:   2 * time.Second,
 		ConnectTimeout: 2 * time.Minute,
 	}
-	db, err := factory.Database.TryToConnect(context.Background(), "default", dbOptions)
+	db, err := factory.Database.TryToConnect(ctx, "default", dbOptions)
 	if err != nil {
 		return err
 	}
@@ -45,11 +46,9 @@ func Init() error {
 		},
 	})
 
-	return migrations.Migrate(db)
-}
-
-func Start() error {
-	var ctx = sigctx.New()
+	if err := migrations.Migrate(db); err != nil {
+		return err
+	}
 
 	log.Println("Starting http server on address " + config.http.addr)
 	listener, err := net.Listen("tcp", config.http.addr)
