@@ -29,4 +29,5 @@ func startJobs(c *Crontab, jobs []JobItem) {
 func shutdownJobs() {
 	log.Println("Shutting down job runners")
 	_jobs_cron.Stop()
+	
 }
