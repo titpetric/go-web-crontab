@@ -49,6 +49,6 @@ func Flags(prefix ...string) {
 	flag.StringVar(&config.crontab.configPath, p("cron-config-path"), "cron.d/*.cron", "Glob pattern for crontab configs")
 	flag.StringVar(&config.crontab.scriptPath, p("cron-script-path"), "cron.scripts/", "Path to crontab scripts folder")
 
-	flag.StringVar(&config.db.dsn, p("db-dsn"), "webcron:webcron@tcp(db1:3306)/webcron?collation=utf8mb4_general_ci", "DSN for database connection")
+	flag.StringVar(&config.db.dsn, p("db-dsn"), "webcron:webcron@tcp(localhost:3306)/webcron?collation=utf8mb4_general_ci", "DSN for database connection")
 	flag.StringVar(&config.db.logger, p("db-logger"), "", "Logger for DB queries (none, stdout)")
 }

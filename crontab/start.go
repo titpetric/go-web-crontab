@@ -8,7 +8,8 @@ import (
 
 	"github.com/titpetric/factory"
 
-	migrations "github.com/titpetric/go-web-crontab/db"
+	migrations "github.com/titpetric/go-web-crontab/internal/db"
+	"github.com/titpetric/go-web-crontab/internal/model"
 )
 
 func Start() error {
@@ -37,7 +38,7 @@ func Start() error {
 	}
 
 	// crontab package
-	cron, err := New(factory.Database.MustGet())
+	cron, err := model.NewCrontab(factory.Database.MustGet())
 	if err != nil {
 		return errors.Wrap(err, "Error creating Crontab object")
 	}

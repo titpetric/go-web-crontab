@@ -1,17 +1,64 @@
-package crontab
+package model
 
 import (
 	"bufio"
 	"log"
 	"os"
+	"path/filepath"
 	"regexp"
 	"strconv"
 	"strings"
 
-	"path/filepath"
-
 	"github.com/pkg/errors"
+	"github.com/robfig/cron"
+	"github.com/titpetric/factory"
 )
+
+type Crontab struct {
+	db        *factory.DB
+	scheduler *cron.Cron
+
+	Jobs *Jobs
+}
+
+func NewCrontab(db *factory.DB) (*Crontab, error) {
+	var err error
+	cron := &Crontab{
+		db:        db,
+		scheduler: cron.New(),
+	}
+
+	cron.Jobs, err = NewJobs(cron)
+	if err != nil {
+		return nil, err
+	}
+
+	return cron, nil
+}
+
+func (cron *Crontab) Start() {
+	var jobs = cron.Jobs.jobs
+
+	log.Println("Starting up job runners")
+	for idx, _ := range jobs {
+		job := jobs[idx]
+		runFunc := func() {
+			if err := job.Run(cron); err != nil {
+				log.Printf("Unexpected error when running job: %+v", err)
+			}
+		}
+
+		if err := cron.scheduler.AddFunc(job.GetSchedule(), runFunc); err != nil {
+			panic(err)
+		}
+	}
+	cron.scheduler.Start()
+
+}
+
+func (cron *Crontab) Shutdown() {
+	cron.scheduler.Stop()
+}
 
 func (cron *Crontab) Load(configPath, scriptPath string) error {
 	configs, err := filepath.Glob(configPath)

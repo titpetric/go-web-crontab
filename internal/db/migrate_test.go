@@ -1,3 +1,4 @@
+//go:build integration
 // +build integration
 
 package db
@@ -12,7 +13,8 @@ import (
 
 func TestMigrations(t *testing.T) {
 	dbOptions := &factory.DatabaseConnectionOptions{
-		DSN:            "webcron:webcron@tcp(webcron-db:3306)/webcron?collation=utf8mb4_general_ci",
+		DSN:            "webcron:webcron@tcp(localhost:3306)/webcron?collation=utf8mb4_general_ci",
+		DriverName:     "mysql",
 		Logger:         "stdout",
 		Retries:        100,
 		RetryTimeout:   2 * time.Second,

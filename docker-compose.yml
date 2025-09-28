@@ -1,0 +1,12 @@
+services:
+  webcron-db:
+    image: percona:8.0
+    pull_policy: always
+    command: ["--innodb_lock_wait_timeout=2"]
+    ports:
+      - "3306:3306"
+    environment:
+      MYSQL_ROOT_PASSWORD: bRxJ37sJ6Qu4
+      MYSQL_DATABASE: webcron
+      MYSQL_USER: webcron
+      MYSQL_PASSWORD: webcron

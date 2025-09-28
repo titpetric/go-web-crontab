@@ -1,0 +1,20 @@
+---
+version: "3"
+
+tasks:
+  default:
+    - go fmt ./...
+    - go test -v ./...
+    - go install ./cmd/...
+
+  test:
+    desc: "Run tests"
+    cmds:
+      - docker compose up -d --wait
+      - go test -v --tags=integration ./...
+
+  run:
+    desc: "Run webcron"
+    cmds:
+      - docker compose up -d --wait
+      - webcron

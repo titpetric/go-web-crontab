@@ -3,16 +3,22 @@ package db
 import (
 	"fmt"
 	"log"
+	"net/http"
 	"os"
-	"path/filepath"
+	"path"
 	"regexp"
 	"sort"
 	"strings"
+
+	"embed"
 
 	"github.com/goware/statik/fs"
 	"github.com/pkg/errors"
 	"github.com/titpetric/factory"
 )
+
+//go:embed schema/mysql
+var schemaMySQL embed.FS
 
 func statements(contents []byte, err error) ([]string, error) {
 	if err != nil {
@@ -22,16 +28,12 @@ func statements(contents []byte, err error) ([]string, error) {
 }
 
 func Migrate(db *factory.DB) error {
-	statikFS, err := fs.New(Asset)
-	if err != nil {
-		return errors.Wrap(err, "Error creating statik filesystem")
-	}
+	var schemaFS = http.FS(schemaMySQL)
 
 	var files []string
 
-	if err := fs.Walk(statikFS, "/", func(filename string, info os.FileInfo, err error) error {
-		matched, err := filepath.Match("/*.up.sql", filename)
-		if matched {
+	if err := fs.Walk(schemaFS, "/", func(filename string, info os.FileInfo, err error) error {
+		if strings.HasSuffix(filename, ".up.sql") {
 			files = append(files, filename)
 		}
 		return err
@@ -60,7 +62,7 @@ func Migrate(db *factory.DB) error {
 		}
 
 		up := func() error {
-			stmts, err := statements(fs.ReadFile(statikFS, filename))
+			stmts, err := statements(fs.ReadFile(schemaFS, filename))
 			if err != nil {
 				return errors.Wrap(err, fmt.Sprintf("Error reading migration %s", filename))
 			}
@@ -91,7 +93,8 @@ func Migrate(db *factory.DB) error {
 		return err
 	}
 
-	if err := migrate("/migrations.sql", false); err != nil {
+	migrationFile := path.Join(path.Dir(files[0]), "migrations.sql")
+	if err := migrate(migrationFile, false); err != nil {
 		return err
 	}
 
