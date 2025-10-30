@@ -3,13 +3,13 @@ package model
 type Jobs struct {
 	cron *Crontab
 
-	jobs []JobItem
+	jobs []Job
 }
 
 func NewJobs(cron *Crontab) (*Jobs, error) {
 	jobs := &Jobs{
 		cron: cron,
-		jobs: []JobItem{},
+		jobs: []Job{},
 	}
 	return jobs, nil
 }

@@ -3,18 +3,25 @@ version: "3"
 
 tasks:
   default:
+    default: "Run stuff"
+    cmds:
     - go fmt ./...
-    - go test -v ./...
-    - go install ./cmd/...
+    - go test -timeout 5s -v -count 1 ./...
 
   test:
     desc: "Run tests"
     cmds:
       - docker compose up -d --wait
-      - go test -v --tags=integration ./...
+      - go test -v --tags=integration -count 1 ./...
 
   run:
     desc: "Run webcron"
     cmds:
-      - docker compose up -d --wait
+      - go install ./cmd/...
       - webcron
+
+  clean:
+    desc: "Clean up docker"
+    cmds:
+      - docker compose down
+      - docker system prune -f

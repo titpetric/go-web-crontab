@@ -4,9 +4,8 @@ import (
 	"time"
 
 	"github.com/SentimensRG/sigctx"
+	"github.com/go-bridget/mig/db"
 	"github.com/pkg/errors"
-
-	"github.com/titpetric/factory"
 
 	migrations "github.com/titpetric/go-web-crontab/internal/db"
 	"github.com/titpetric/go-web-crontab/internal/model"
@@ -20,33 +19,39 @@ func Start() error {
 		return err
 	}
 
-	dbOptions := &factory.DatabaseConnectionOptions{
-		DSN:            config.db.dsn,
-		DriverName:     "mysql",
-		Logger:         config.db.logger,
+	options := &db.Options{
+		Credentials: db.Credentials{
+			DSN:    config.db.dsn,
+			Driver: config.db.driver,
+		},
 		Retries:        100,
-		RetryTimeout:   2 * time.Second,
+		RetryDelay:     2 * time.Second,
 		ConnectTimeout: 2 * time.Minute,
 	}
-	db, err := factory.Database.TryToConnect(ctx, "default", dbOptions)
+
+	handle, err := db.ConnectWithRetry(ctx, options)
 	if err != nil {
 		return err
 	}
 
-	if err := migrations.Migrate(db); err != nil {
+	handle.SetConnMaxLifetime(30 * 24 * time.Hour)
+
+	if err := migrations.Migrate(handle, options.Credentials.Driver); err != nil {
 		return err
 	}
 
 	// crontab package
-	cron, err := model.NewCrontab(factory.Database.MustGet())
+	cron, err := model.NewCrontab(handle)
 	if err != nil {
 		return errors.Wrap(err, "Error creating Crontab object")
 	}
+
 	err = cron.Load(config.crontab.configPath, config.crontab.scriptPath)
 	if err != nil {
 		return errors.Wrap(err, "Error loading Crontab configs")
 	}
 	cron.Start()
+
 	<-ctx.Done()
 
 	cron.Shutdown()

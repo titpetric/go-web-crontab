@@ -6,10 +6,10 @@ import (
 
 	"github.com/pkg/errors"
 	"github.com/titpetric/factory"
-	"github.com/titpetric/go-web-crontab/logger"
+	"github.com/titpetric/go-web-crontab/internal/logger"
 )
 
-type JobItem struct {
+type Job struct {
 	factory.Semaphore
 	cancel chan bool
 
@@ -22,11 +22,11 @@ type JobItem struct {
 	Command  string
 }
 
-func (job *JobItem) GetSchedule() string {
+func (job *Job) GetSchedule() string {
 	return job.Schedule
 }
 
-func (job *JobItem) Run(cron *Crontab) error {
+func (job *Job) Run(cron *Crontab) error {
 	if !job.CanRun() {
 		return nil
 	}

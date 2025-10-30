@@ -9,19 +9,19 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/jmoiron/sqlx"
 	"github.com/pkg/errors"
 	"github.com/robfig/cron"
-	"github.com/titpetric/factory"
 )
 
 type Crontab struct {
-	db        *factory.DB
+	db        *sqlx.DB
 	scheduler *cron.Cron
 
 	Jobs *Jobs
 }
 
-func NewCrontab(db *factory.DB) (*Crontab, error) {
+func NewCrontab(db *sqlx.DB) (*Crontab, error) {
 	var err error
 	cron := &Crontab{
 		db:        db,
@@ -117,7 +117,7 @@ func (cron *Crontab) loadConfig(filename, scriptPath string) error {
 			schedule = strings.Join(lineExp[1:7], " ")
 		}
 
-		job := JobItem{
+		job := Job{
 			cancel:   make(chan bool, 1),
 			Name:     lineExp[len(lineExp)-1],
 			Filename: filename,
@@ -126,10 +126,14 @@ func (cron *Crontab) loadConfig(filename, scriptPath string) error {
 			Schedule: schedule,
 		}
 
-		cron.db.Insert("jobs", job)
+		// Only name and description are stored. This makes sure all the names
+		// are added when the crontab service is started.
+		cron.db.NamedExec("insert into jobs (name) values (:name)", job)
+
 		cron.Jobs.jobs = append(cron.Jobs.jobs, job)
 
 		log.Println("Line:", lineExp)
 	}
+
 	return scanner.Err()
 }

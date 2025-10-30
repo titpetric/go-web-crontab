@@ -1,6 +1,8 @@
 package db
 
 import (
+	"database/sql"
+	"embed"
 	"fmt"
 	"log"
 	"net/http"
@@ -10,15 +12,26 @@ import (
 	"sort"
 	"strings"
 
-	"embed"
-
 	"github.com/goware/statik/fs"
+	"github.com/jmoiron/sqlx"
 	"github.com/pkg/errors"
-	"github.com/titpetric/factory"
 )
 
 //go:embed schema/mysql
 var schemaMySQL embed.FS
+
+//go:embed schema/sqlite
+var schemaSqlite embed.FS
+
+func schema(driver string) (http.FileSystem, error) {
+	switch driver {
+	case "sqlite":
+		return http.FS(schemaSqlite), nil
+	case "mysql":
+		return http.FS(schemaMySQL), nil
+	}
+	return nil, fmt.Errorf("Unsupported driver for embedded migrations: %v", driver)
+}
 
 func statements(contents []byte, err error) ([]string, error) {
 	if err != nil {
@@ -27,8 +40,11 @@ func statements(contents []byte, err error) ([]string, error) {
 	return regexp.MustCompilePOSIX(";$").Split(string(contents), -1), nil
 }
 
-func Migrate(db *factory.DB) error {
-	var schemaFS = http.FS(schemaMySQL)
+func Migrate(db *sqlx.DB, driverName string) error {
+	schemaFS, err := schema(driverName)
+	if err != nil {
+		return err
+	}
 
 	var files []string
 
@@ -53,7 +69,11 @@ func Migrate(db *factory.DB) error {
 			Filename: filename,
 		}
 		if useLog {
-			if err := db.Get(&status, "select * from migrations where project=? and filename=?", status.Project, status.Filename); err != nil {
+			err := db.Get(&status, "select * from migrations where project=? and filename=?", status.Project, status.Filename)
+			if errors.Is(err, sql.ErrNoRows) {
+				err = nil
+			}
+			if err != nil {
 				return err
 			}
 			if status.Status == "ok" {
@@ -81,12 +101,16 @@ func Migrate(db *factory.DB) error {
 			return nil
 		}
 
-		err := db.Transaction(up)
+		err := up()
+		if errors.Is(err, sql.ErrNoRows) {
+			err = nil
+		}
 		if err != nil {
 			status.Status = err.Error()
 		}
+
 		if useLog {
-			if err := db.Replace("migrations", status); err != nil {
+			if _, err := db.NamedExec("replace into migrations (project, filename, statement_index, status) values (:project, :filename, :statement_index, :status)", status); err != nil {
 				log.Println("replace failed", err)
 			}
 		}
@@ -99,7 +123,8 @@ func Migrate(db *factory.DB) error {
 	}
 
 	for _, filename := range files {
-		if err := migrate(filename, true); err != nil {
+		err := migrate(filename, true)
+		if err != nil {
 			return err
 		}
 	}

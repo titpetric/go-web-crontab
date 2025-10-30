@@ -9,9 +9,9 @@ import (
 	"github.com/apex/log"
 	"github.com/apex/log/handlers/cli"
 	"github.com/apex/log/handlers/json"
+	"github.com/jmoiron/sqlx"
 	"github.com/jmoiron/sqlx/types"
 	"github.com/pkg/errors"
-	"github.com/titpetric/factory"
 )
 
 // Log provides methods for easy logging. This should be used for each
@@ -147,7 +147,7 @@ func (l *Log) flushStdout() {
 
 // Finish finalizes the logs and write to the database. The error field should
 // be for the command's error.
-func (l *Log) Finish(db *factory.DB, err error) (*LogEntry, error) {
+func (l *Log) Finish(db *sqlx.DB, err error) (*LogEntry, error) {
 	l.mu.Lock()
 	defer l.mu.Unlock()
 
@@ -193,6 +193,7 @@ func (l *Log) Finish(db *factory.DB, err error) (*LogEntry, error) {
 		return nil, errors.Wrap(err, "Couldn't scan JSON")
 	}
 
-	// Insert the entry into the database
-	return dbLog, db.Insert("logs", dbLog)
+	sql := "insert into logs (name, stamp, duration, output, exit_code) values (:name, :stamp, :duration, :output, :exit_code)"
+	_, err = db.NamedExec(sql, dbLog)
+	return dbLog, err
 }
