@@ -8,7 +8,7 @@ import (
 	"github.com/pkg/errors"
 
 	migrations "github.com/titpetric/go-web-crontab/internal/db"
-	"github.com/titpetric/go-web-crontab/internal/model"
+	"github.com/titpetric/go-web-crontab/internal/service"
 )
 
 func Start() error {
@@ -34,6 +34,7 @@ func Start() error {
 		return err
 	}
 
+	handle.SetMaxOpenConns(1)
 	handle.SetConnMaxLifetime(30 * 24 * time.Hour)
 
 	if err := migrations.Migrate(handle, options.Credentials.Driver); err != nil {
@@ -41,7 +42,7 @@ func Start() error {
 	}
 
 	// crontab package
-	cron, err := model.NewCrontab(handle)
+	cron, err := service.NewCrontab(handle)
 	if err != nil {
 		return errors.Wrap(err, "Error creating Crontab object")
 	}

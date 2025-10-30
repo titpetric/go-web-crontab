@@ -1,4 +1,4 @@
-package model
+package service
 
 type Jobs struct {
 	cron *Crontab
