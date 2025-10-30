@@ -50,7 +50,11 @@ func Start() error {
 	if err != nil {
 		return errors.Wrap(err, "Error loading Crontab configs")
 	}
-	cron.Start()
+
+	err = cron.Start()
+	if err != nil {
+		return err
+	}
 
 	<-ctx.Done()
 

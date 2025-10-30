@@ -11,7 +11,7 @@ import (
 
 	"github.com/jmoiron/sqlx"
 	"github.com/pkg/errors"
-	"github.com/robfig/cron"
+	"github.com/robfig/cron/v3"
 )
 
 type Crontab struct {
@@ -36,7 +36,7 @@ func NewCrontab(db *sqlx.DB) (*Crontab, error) {
 	return cron, nil
 }
 
-func (cron *Crontab) Start() {
+func (cron *Crontab) Start() error {
 	var jobs = cron.Jobs.jobs
 
 	log.Println("Starting up job runners")
@@ -44,20 +44,20 @@ func (cron *Crontab) Start() {
 		job := jobs[idx]
 		runFunc := func() {
 			if err := job.Run(cron); err != nil {
-				log.Printf("Unexpected error when running job: %+v", err)
+				log.Printf("error when running job: %+v", err)
 			}
 		}
 
-		if err := cron.scheduler.AddFunc(job.GetSchedule(), runFunc); err != nil {
-			panic(err)
+		if _, err := cron.scheduler.AddFunc(job.GetSchedule(), runFunc); err != nil {
+			return err
 		}
 	}
 	cron.scheduler.Start()
-
+	return nil
 }
 
 func (cron *Crontab) Shutdown() {
-	cron.scheduler.Stop()
+	<-cron.scheduler.Stop().Done()
 }
 
 func (cron *Crontab) Load(configPath, scriptPath string) error {
