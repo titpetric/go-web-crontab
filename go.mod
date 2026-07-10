@@ -11,6 +11,7 @@ require (
 	github.com/titpetric/pdo v0.0.0-20260708190443-d44610ab0476
 	github.com/titpetric/phpscript v0.0.7
 	github.com/titpetric/platform v0.4.6
+	golang.org/x/net v0.56.0
 	modernc.org/sqlite v1.53.0
 )
 
@@ -43,7 +44,6 @@ require (
 	go.opentelemetry.io/otel/sdk v1.44.0 // indirect
 	go.opentelemetry.io/otel/trace v1.44.0 // indirect
 	go.opentelemetry.io/proto/otlp v1.10.0 // indirect
-	golang.org/x/net v0.56.0 // indirect
 	golang.org/x/sys v0.47.0 // indirect
 	golang.org/x/text v0.38.0 // indirect
 	google.golang.org/genproto/googleapis/api v0.0.0-20260622175928-b703f567277d // indirect

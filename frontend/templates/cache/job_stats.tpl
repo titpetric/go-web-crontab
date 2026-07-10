@@ -2,6 +2,8 @@
 
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xterm/xterm@5.5.0/css/xterm.min.css">
+<script src="https://cdn.jsdelivr.net/npm/@xterm/xterm@5.5.0/lib/xterm.min.js"></script>
 
 <div class="container">
 
@@ -13,8 +15,7 @@
 		</div>
 		<div class="page-actions">
 			<a class="btn btn-secondary" href="/">Dashboard</a>
-			<a class="btn btn-danger" href="/run/<?php echo $_v['job']['jobName'];?>
-">Run again</a>
+			<button class="btn btn-danger" type="button" onclick="runJob()">Run again</button>
 		</div>
 	</div>
 
@@ -84,17 +85,53 @@
 			</table>
 		</div>
 		<div class="pager">
+			<div class="pager__info">
+				<span id="pagerInfo"><?php if($_v['job']['total'] > 0){?>
+Showing <?php echo $_v['job']['firstRow'];?>
+&ndash;<?php echo $_v['job']['lastRow'];?>
+ of <?php echo $_v['job']['total']; }else{?>
+No runs recorded<?php }?></span>
+				<label class="pager__size">
+					Per page
+					<select id="pageSizeSelect" class="form-control" onchange="changePageSize(this.value)">
+						<option value="20" <?php if($_v['job']['pageSize'] == 20){?>
+selected<?php }?>>20</option>
+						<option value="50" <?php if($_v['job']['pageSize'] == 50){?>
+selected<?php }?>>50</option>
+						<option value="100" <?php if($_v['job']['pageSize'] == 100){?>
+selected<?php }?>>100</option>
+					</select>
+				</label>
+			</div>
 			<div class="page-actions">
-				<a id="linkPrevious" class="btn btn-secondary" href="<?php echo $_v['job']['link'];?>
+				<a id="linkPrevious" class="btn btn-secondary <?php if(!$_v['job']['hasPrev']){?>
+is-disabled<?php }?>" href="<?php echo $_v['job']['link'];?>
 ?pageNumber=<?php echo $_v['job']['pageNumber']-1;?>
-" <?php if($_v['job']['pageNumber'] == 0){?>
+&pageSize=<?php echo $_v['job']['pageSize'];?>
+" <?php if(!$_v['job']['hasPrev']){?>
 onclick="return false;"<?php }?>>&larr; Previous</a>
-				<a id="linkNext" class="btn btn-secondary" href="<?php echo $_v['job']['link'];?>
+				<a id="linkNext" class="btn btn-secondary <?php if(!$_v['job']['hasNext']){?>
+is-disabled<?php }?>" href="<?php echo $_v['job']['link'];?>
 ?pageNumber=<?php echo $_v['job']['pageNumber']+1;?>
-">Next &rarr;</a>
+&pageSize=<?php echo $_v['job']['pageSize'];?>
+" <?php if(!$_v['job']['hasNext']){?>
+onclick="return false;"<?php }?>>Next &rarr;</a>
 			</div>
 		</div>
 	</section>
+</div>
+
+<div id="termModal" class="modal-overlay" hidden>
+	<div class="modal modal--wide">
+		<div class="modal__head">
+			<span>Run <code><?php echo htmlspecialchars($_v['job']['jobName'], ENT_QUOTES);?>
+</code></span>
+			<button class="icon-btn" type="button" onclick="closeTerm()" aria-label="Close">&times;</button>
+		</div>
+		<div class="modal__body">
+			<div id="terminal" class="terminal-box"></div>
+		</div>
+	</div>
 </div>
 
 <script>
@@ -137,13 +174,50 @@ searchTextbox.addEventListener("keyup", function(event) {
 	var linkPrevious = document.getElementById("linkPrevious");
 	linkPrevious.href = "<?php echo $_v['job']['link'];?>
 ?pageNumber=<?php echo $_v['job']['pageNumber']-1;?>
+&pageSize=<?php echo $_v['job']['pageSize'];?>
 ";
 
 	var linkNext = document.getElementById("linkNext");
 	linkNext.href="<?php echo $_v['job']['link'];?>
 ?pageNumber=<?php echo $_v['job']['pageNumber']+1;?>
+&pageSize=<?php echo $_v['job']['pageSize'];?>
 ";
   }
+});
+
+function changePageSize(size) {
+	window.location.href = "<?php echo $_v['job']['link'];?>
+?pageNumber=0&pageSize=" + size;
+}
+
+// Run again: open a non-interactive terminal streamed over a websocket.
+var _termWs = null;
+function runJob() {
+	var overlay = document.getElementById('termModal');
+	var host = document.getElementById('terminal');
+	host.innerHTML = '';
+	overlay.hidden = false;
+
+	var term = new Terminal({ convertEol: true, fontSize: 13, cursorBlink: false, theme: { background: '#0b1120', foreground: '#e2e8f0' } });
+	term.open(host);
+	term.write('Connecting…\r\n');
+
+	var proto = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+	var ws = new WebSocket(proto + '//' + window.location.host + '/ws/run/' + encodeURI("<?php echo $_v['job']['jobName'];?>
+"));
+	_termWs = ws;
+	ws.onmessage = function (event) { term.write(event.data); };
+	ws.onclose = function () { term.write('\r\n[session closed]\r\n'); };
+	ws.onerror = function () { term.write('\r\n[connection error]\r\n'); };
+}
+
+function closeTerm() {
+	if (_termWs) { _termWs.close(); _termWs = null; }
+	document.getElementById('termModal').hidden = true;
+}
+
+document.addEventListener('keydown', function (event) {
+	if (event.key === 'Escape') { closeTerm(); }
 });
 
 // search

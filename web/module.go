@@ -3,11 +3,16 @@ package web
 import (
 	"context"
 	"fmt"
+	"io"
 	"net/http"
 	"os"
+	"os/exec"
+	"path"
 	"path/filepath"
 	"strings"
 	"time"
+
+	"golang.org/x/net/websocket"
 
 	"github.com/titpetric/platform"
 
@@ -22,12 +27,15 @@ type Module struct {
 	platform.UnimplementedModule
 
 	root         string
+	scriptPath   string
 	includeCache *runner.IncludeCache
 	exprCache    *runner.ExprCache
 }
 
 // NewModule creates the web dashboard module rooted at the given directory.
-func NewModule(root string) *Module {
+// scriptPath is the directory holding the cron scripts, used by the live "run"
+// terminal endpoint.
+func NewModule(root, scriptPath string) *Module {
 	// Bridge the platform DB env (PLATFORM_DB_CRONTAB) to the phpscript
 	// DatabaseDriver env (DB_DSN_CRONTAB) so PHP can open the same database.
 	if dsn := os.Getenv("PLATFORM_DB_CRONTAB"); dsn != "" && os.Getenv("DB_DSN_CRONTAB") == "" {
@@ -37,6 +45,7 @@ func NewModule(root string) *Module {
 	return &Module{
 		UnimplementedModule: *platform.NewUnimplementedModule("web"),
 		root:                root,
+		scriptPath:          scriptPath,
 		includeCache:        runner.NewIncludeCache(),
 		exprCache:           runner.NewExprCache(),
 	}
@@ -56,11 +65,71 @@ func (m *Module) Mount(ctx context.Context, r platform.Router) error {
 	}
 
 	r.Get("/assets/*", m.handleStatic)
+	r.Handle("/ws/run/*", websocket.Handler(m.handleRunWS))
 	r.Handle("/*", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "text/html; charset=utf-8")
 		phpMux.ServeHTTP(w, r)
 	}))
 	return nil
+}
+
+// handleRunWS runs a cron script on demand and streams its combined output to
+// the browser over a websocket, so the dashboard can render it in an xterm.js
+// terminal. The run is non-interactive: no stdin is forwarded.
+func (m *Module) handleRunWS(ws *websocket.Conn) {
+	defer ws.Close()
+
+	// Send output as text frames so the browser receives strings directly.
+	ws.PayloadType = websocket.TextFrame
+
+	// Resolve the requested job name from the path and guard against traversal.
+	name := strings.TrimPrefix(ws.Request().URL.Path, "/ws/run/")
+	name = strings.TrimPrefix(path.Clean("/"+name), "/")
+	if name == "" || strings.Contains(name, "..") {
+		io.WriteString(ws, "invalid job name\r\n")
+		return
+	}
+
+	script := filepath.Join(m.scriptPath, filepath.FromSlash(name))
+	absRoot, err := filepath.Abs(m.scriptPath)
+	if err != nil {
+		io.WriteString(ws, "server error\r\n")
+		return
+	}
+	absScript, err := filepath.Abs(script)
+	if err != nil || !strings.HasPrefix(absScript, absRoot+string(os.PathSeparator)) {
+		io.WriteString(ws, "invalid job path\r\n")
+		return
+	}
+	if _, err := os.Stat(script); err != nil {
+		fmt.Fprintf(ws, "script not found: %s\r\n", name)
+		return
+	}
+
+	fmt.Fprintf(ws, "$ ./%s\r\n", name)
+
+	cmd := exec.Command("./" + name)
+	cmd.Dir = m.scriptPath
+	cmd.Env = append(os.Environ(), "TERM=xterm")
+
+	// A single pipe fed by both stdout and stderr keeps their writes ordered
+	// and safe for the copying goroutine (io.PipeWriter is concurrency-safe).
+	pr, pw := io.Pipe()
+	cmd.Stdout = pw
+	cmd.Stderr = pw
+
+	if err := cmd.Start(); err != nil {
+		fmt.Fprintf(ws, "failed to start: %s\r\n", err)
+		return
+	}
+
+	go func() {
+		_ = cmd.Wait()
+		_ = pw.Close()
+	}()
+
+	_, _ = io.Copy(ws, pr)
+	io.WriteString(ws, "\r\n[process finished]\r\n")
 }
 
 // handleStatic serves static assets (CSS, JS) from the frontend root.

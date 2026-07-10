@@ -8,30 +8,58 @@ if (isset($_PATH["jobName"]) && $_PATH["jobName"] != "") {
 	$jobName = $_PATH["jobName"];
 	$pageNumber = 0;
 	if (isset($_GET["pageNumber"])) {
-		$pageNumber = $_GET["pageNumber"] + 0;
+		$pageNumber = (int)$_GET["pageNumber"];
 	}
-	$pageSize = 25;
+	if ($pageNumber < 0) {
+		$pageNumber = 0;
+	}
+
+	$pageSize = 20;
+	if (isset($_GET["pageSize"])) {
+		$requested = (int)$_GET["pageSize"];
+		if ($requested == 50) {
+			$pageSize = 50;
+		}
+		if ($requested == 100) {
+			$pageSize = 100;
+		}
+	}
 	$offset = $pageNumber * $pageSize;
+
+	$total = 0;
+	$totalRow = $db->get("SELECT COUNT(*) AS total FROM logs WHERE name = ?", $jobName);
+	if ($totalRow) {
+		$total = $totalRow["total"] + 0;
+	}
 
 	$job = array(
 		"jobName" => $jobName,
 		"pageNumber" => $pageNumber,
 		"pageSize" => $pageSize,
+		"total" => $total,
+		"firstRow" => $total > 0 ? $offset + 1 : 0,
+		"lastRow" => ($offset + $pageSize) < $total ? $offset + $pageSize : $total,
+		"hasPrev" => $pageNumber > 0,
+		"hasNext" => ($offset + $pageSize) < $total,
 		"link" => "/" . $jobName,
 	);
 
+	// Logs are numbered newest-first (row 1 = most recent) to stay consistent
+	// with the row lookup used by detail.php.
 	$logs = array();
-	$rows = $db->get_all("SELECT ID, stamp, duration, exitCode FROM (SELECT ROW_NUMBER() OVER (ORDER BY stamp DESC) AS ID, stamp, duration / 1000000000.0 AS duration, exit_code AS exitCode FROM logs WHERE name = ?) ORDER BY ID LIMIT ? OFFSET ?", $jobName, $pageSize, $offset);
+	$rows = $db->get_all("SELECT stamp, duration / 1000000000.0 AS duration, exit_code AS exitCode FROM logs WHERE name = ? ORDER BY stamp DESC LIMIT ? OFFSET ?", $jobName, $pageSize, $offset);
+	$rowNumber = $offset;
 	foreach ($rows as $log) {
+		$rowNumber++;
 		$exitCode = $log["exitCode"] + 0;
 		if ($exitCode != 0) {
-			$exitCode = '<span class="badge badge-danger">Exit: ' . $exitCode . '</span>';
+			$exitCode = '<span class="badge badge-fail">Exit: ' . $exitCode . '</span>';
 		} else {
-			$exitCode = '<span class="badge badge-success">OK</span>';
+			$exitCode = '<span class="badge badge-ok">OK</span>';
 		}
 		$logs[] = array(
-			"id" => $log["ID"],
-			"link" => $job["link"] . "/" . $log["ID"],
+			"id" => $rowNumber,
+			"link" => $job["link"] . "/" . $rowNumber,
 			"exitCode" => $exitCode,
 			"duration" => format_duration($log["duration"]),
 			"date" => date("Y/m/d H:i", strtotime($log["stamp"])),
@@ -71,7 +99,7 @@ if (isset($_PATH["jobName"]) && $_PATH["jobName"] != "") {
 		$monthly["datasets"][2]["data"][] = $row["durationMax"];
 	}
 
-	$title = $jobName . ", page " . $pageNumber;
+	$title = $jobName;
 
 	$tpl->load("job_stats.tpl");
 	$tpl->assign(array("title" => $title, "daily" => $daily, "monthly" => $monthly, "job" => $job, "logs" => $logs));

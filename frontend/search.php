@@ -6,7 +6,7 @@ include("bootstrap.php");
 
 $pageNumber = 0;
 if (isset($_POST["pageNumber"])) {
-	$pageNumber = $_POST["pageNumber"] + 0;
+	$pageNumber = (int)$_POST["pageNumber"];
 }
 $pageSize = 25;
 $offset = $pageNumber * $pageSize;

@@ -10,17 +10,29 @@ import (
 )
 
 type Storage struct {
-	db *pdo.PDO
+	db     *pdo.PDO
+	handle *sqlx.DB
 }
 
 func NewStorage(handle *sqlx.DB) *Storage {
 	return &Storage{
-		db: pdo.New(handle),
+		db:     pdo.New(handle),
+		handle: handle,
 	}
 }
 
 func (s *Storage) SaveJob(ctx context.Context, name, description string) error {
 	now := time.Now()
+
+	// The config sync passes an empty description, so keep any existing
+	// (potentially user-edited) description instead of clobbering it on reload.
+	if description == "" {
+		var existing string
+		if err := s.handle.GetContext(ctx, &existing, "SELECT description FROM jobs WHERE name = ?", name); err == nil {
+			description = existing
+		}
+	}
+
 	job := model.Jobs{
 		Name:        name,
 		Description: description,
