@@ -42,9 +42,9 @@ if (isset($_PATH["jobName"]) && $_PATH["jobName"] != "") {
 	$daily = array(
 		"labels" => array(),
 		"datasets" => array(
-			array("label" => "Minimum duration", "backgroundColor" => "#caf270", "data" => array()),
-			array("label" => "Average duration", "backgroundColor" => "#45c490", "data" => array()),
-			array("label" => "Maximum duration", "backgroundColor" => "#008d93", "data" => array()),
+			array("label" => "Minimum duration", "backgroundColor" => "#c7d2fe", "borderRadius" => 4, "data" => array()),
+			array("label" => "Average duration", "backgroundColor" => "#6366f1", "borderRadius" => 4, "data" => array()),
+			array("label" => "Maximum duration", "backgroundColor" => "#3730a3", "borderRadius" => 4, "data" => array()),
 		),
 	);
 	foreach ($dayRows as $row) {
@@ -59,9 +59,9 @@ if (isset($_PATH["jobName"]) && $_PATH["jobName"] != "") {
 	$monthly = array(
 		"labels" => array(),
 		"datasets" => array(
-			array("label" => "Minimum duration", "backgroundColor" => "#caf270", "data" => array()),
-			array("label" => "Average duration", "backgroundColor" => "#45c490", "data" => array()),
-			array("label" => "Maximum duration", "backgroundColor" => "#008d93", "data" => array()),
+			array("label" => "Minimum duration", "backgroundColor" => "#c7d2fe", "borderRadius" => 4, "data" => array()),
+			array("label" => "Average duration", "backgroundColor" => "#6366f1", "borderRadius" => 4, "data" => array()),
+			array("label" => "Maximum duration", "backgroundColor" => "#3730a3", "borderRadius" => 4, "data" => array()),
 		),
 	);
 	foreach ($monthRows as $row) {
@@ -106,10 +106,33 @@ foreach ($rows as $row) {
 	$body["jobs"][] = $job;
 }
 
-$title = "CRONTAB jobs";
+$summary = array(
+	"total" => 0,
+	"scheduled" => 0,
+	"onetime" => 0,
+	"healthy" => 0,
+	"failing" => 0,
+);
+foreach ($body["jobs"] as $job) {
+	$summary["total"]++;
+	if (strpos($job["name"], "onetime/") !== false) {
+		$summary["onetime"]++;
+	} else {
+		$summary["scheduled"]++;
+	}
+	if (!empty($job["lastRun"])) {
+		if (($job["lastRun"]["exitCode"] + 0) == 0) {
+			$summary["healthy"]++;
+		} else {
+			$summary["failing"]++;
+		}
+	}
+}
+
+$title = "webcron dashboard";
 
 $tpl->load("main.tpl");
-$tpl->assign(array("title" => $title, "body" => $body));
+$tpl->assign(array("title" => $title, "body" => $body, "summary" => $summary));
 $tpl->render();
 
 $db->close();

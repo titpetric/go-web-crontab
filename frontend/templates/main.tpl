@@ -1,156 +1,144 @@
 {load html_header.tpl}
 
-<script src="https://cdn.rawgit.com/fnando/sparkline/master/dist/sparkline.js"></script>
-
+<script src="/assets/sparkline.js"></script>
 <script>
-function findClosest(target, tagName) {
-  if (target.tagName === tagName) {
-    return target;
-  }
-
-  while ((target = target.parentNode)) {
-    if (target.tagName === tagName) {
-      break;
-    }
-  }
-
-  return target;
-}
-
-var options = {
-  onmousemove(event, datapoint) {
-    var svg = findClosest(event.target, "svg");
-    var tooltip = svg.nextElementSibling;
-
-    tooltip.hidden = false;
-    tooltip.textContent = datapoint.name + ': ' + (datapoint.value.toFixed(3)) + 's'
-    tooltip.style.top = event.offsetY + "px";
-    tooltip.style.left = (event.offsetX+20) + "px";
-  },
-
-  onmouseout() {
-    var svg = findClosest(event.target, "svg");
-    var tooltip = svg.nextElementSibling;
-
-    tooltip.hidden = true;
-  }
+var sparkOptions = {
+	onmousemove: function (event, datapoint) {
+		var svg = event.currentTarget;
+		var tip = svg.parentNode.querySelector('.spark-tooltip');
+		if (!tip || !datapoint) { return; }
+		tip.hidden = false;
+		tip.textContent = datapoint.name + '  ' + Number(datapoint.value).toFixed(3) + 's';
+		tip.style.top = (event.offsetY - 8) + 'px';
+		tip.style.left = (event.offsetX + 14) + 'px';
+	},
+	onmouseout: function (event) {
+		var tip = event.currentTarget.parentNode.querySelector('.spark-tooltip');
+		if (tip) { tip.hidden = true; }
+	}
 };
-
 </script>
 
 <div class="container">
 
-	<section class="contents">
-		<b>Onetime Jobs</b>
-		<table class="table table-striped table-sm">
-		<thead>
-			<tr>
-				<th>Script</th>
-				<th>History</th>
-				<th class="tar">Duration</th>
-				<th class="tar">Last timestamp</th>
-			</tr>
-		</thead>
-		<tbody>
+	<div class="page-head">
+		<div>
+			<h1>Dashboard</h1>
+			<div class="subtitle">Scheduled and one-time jobs, with recent run history.</div>
+		</div>
+	</div>
 
-		{foreach $body['jobs'] as $k => $job}
-			{if $job['active'] == 1 && strpos($job['name'], "onetime/") !== false}
-	<tr>
-		<td><a href="/{$job['name']}">{$job['name']}</a></td>
+	<div class="stat-grid">
+		<div class="stat-card">
+			<div class="stat-label">Total jobs</div>
+			<div class="stat-value">{summary.total}</div>
+			<div class="stat-hint">tracked in crontab</div>
+		</div>
+		<div class="stat-card">
+			<div class="stat-label">Scheduled</div>
+			<div class="stat-value">{summary.scheduled}</div>
+			<div class="stat-hint">{summary.onetime} one-time</div>
+		</div>
+		<div class="stat-card is-ok">
+			<div class="stat-label">Healthy</div>
+			<div class="stat-value">{summary.healthy}</div>
+			<div class="stat-hint">last run exit 0</div>
+		</div>
+		<div class="stat-card is-fail">
+			<div class="stat-label">Failing</div>
+			<div class="stat-value">{summary.failing}</div>
+			<div class="stat-hint">last run non-zero</div>
+		</div>
+	</div>
 
-				{if !empty($job['lastRun'])}
-			<td>
-
-      <div style="position: relative">
-        <svg class="job-{$k}" width="300" height="20" stroke-width="2" {if $job['lastRun']['exitCode'] == 0}stroke="blue" fill="rgba(0, 0, 255, .2)"{else}stroke="red" fill="rgba(255, 0, 0, .2)"{/if}></svg>
-        <span class="tooltip" hidden="true"></span>
-      </div>
-
-				<script>
-					sparkline.sparkline(document.querySelector(".job-{$k}"), {$job['history']|history}, options)
-				</script>
-			</td>
-			<td class="tar">{eval echo sprintf("%.3fs", $job['lastRun']['duration'])}</td>
-			<td class="tar">{eval echo date("Y-m-d H:i:s", strtotime($job['lastRun']['stamp']))}</td>
-				{else}
-			<td colspan="4"><i>No last run info</i></td>
+	<section class="panel">
+		<div class="panel__head">
+			<h2 class="panel__title">One-time jobs</h2>
+		</div>
+		<div class="panel__body">
+			<table class="table">
+			<thead>
+				<tr>
+					<th>Script</th>
+					<th>Status</th>
+					<th>History</th>
+					<th class="tar">Duration</th>
+					<th class="tar">Last run</th>
+				</tr>
+			</thead>
+			<tbody>
+			{foreach $body['jobs'] as $k => $job}
+				{if $job['active'] == 1 && strpos($job['name'], "onetime/") !== false}
+				<tr>
+					<td class="job-name"><a href="/{$job['name']}"><code>{$job['name']}</code></a></td>
+					{if !empty($job['lastRun'])}
+					<td>{if $job['lastRun']['exitCode'] == 0}<span class="badge badge-ok">OK</span>{else}<span class="badge badge-fail">Exit: {$job['lastRun']['exitCode']}</span>{/if}</td>
+					<td>
+						<div class="sparkline-box">
+							<svg class="job-{$k}" width="240" height="28" stroke-width="2" {if $job['lastRun']['exitCode'] == 0}stroke="#16a34a" fill="rgba(22,163,74,0.12)"{else}stroke="#dc2626" fill="rgba(220,38,38,0.12)"{/if}></svg>
+							<span class="spark-tooltip" hidden="true"></span>
+						</div>
+						<script>Sparkline.draw(document.querySelector(".job-{$k}"), {$job['history']|history}, sparkOptions)</script>
+					</td>
+					<td class="tar mono">{eval echo sprintf("%.3fs", $job['lastRun']['duration'])}</td>
+					<td class="tar mono">{eval echo date("Y-m-d H:i:s", strtotime($job['lastRun']['stamp']))}</td>
+					{else}
+					<td colspan="4" class="empty-cell">No run history yet</td>
+					{/if}
+				</tr>
 				{/if}
-	</tr>
-			{/if}
-		{/foreach}
-
-		</tbody>
-		</table>
+			{else}
+				<tr><td colspan="5" class="empty-cell">No jobs found.</td></tr>
+			{/foreach}
+			</tbody>
+			</table>
+		</div>
 	</section>
 
-	<section class="contents">
-		<b>Scheduled Jobs</b>
-		<table class="table table-striped table-sm">
-		<thead>
-			<tr>
-				<th>Script</th>
-				<th>History</th>
-				<th class="tar">Duration</th>
-				<th class="tar">Last timestamp</th>
-			</tr>
-		</thead>
-		<tbody>
-
-		{foreach $body['jobs'] as $k => $job}
-			{if $job['active'] == 1 && strpos($job['name'], "onetime/") === false}
-	<tr>
-		<td><a href="/{$job['name']}">{$job['name']}</a></td>
-
-				{if !empty($job['lastRun'])}
-			<td>
-
-      <div style="position: relative">
-        <svg class="job-{$k}" width="300" height="20" stroke-width="2" {if $job['lastRun']['exitCode'] == 0}stroke="blue" fill="rgba(0, 0, 255, .2)"{else}stroke="red" fill="rgba(255, 0, 0, .2)"{/if}></svg>
-        <span class="tooltip" hidden="true"></span>
-      </div>
-
-				<script>
-					sparkline.sparkline(document.querySelector(".job-{$k}"), {$job['history']|history}, options)
-				</script>
-			</td>
-			<td class="tar">{eval echo sprintf("%.3fs", $job['lastRun']['duration'])}</td>
-			<td class="tar">{eval echo date("Y-m-d H:i:s", strtotime($job['lastRun']['stamp']))}</td>
-				{else}
-			<td colspan="4"><i>No last run info</i></td>
+	<section class="panel">
+		<div class="panel__head">
+			<h2 class="panel__title">Scheduled jobs</h2>
+		</div>
+		<div class="panel__body">
+			<table class="table">
+			<thead>
+				<tr>
+					<th>Script</th>
+					<th>Status</th>
+					<th>History</th>
+					<th class="tar">Duration</th>
+					<th class="tar">Last run</th>
+				</tr>
+			</thead>
+			<tbody>
+			{foreach $body['jobs'] as $k => $job}
+				{if $job['active'] == 1 && strpos($job['name'], "onetime/") === false}
+				<tr>
+					<td class="job-name"><a href="/{$job['name']}"><code>{$job['name']}</code></a></td>
+					{if !empty($job['lastRun'])}
+					<td>{if $job['lastRun']['exitCode'] == 0}<span class="badge badge-ok">OK</span>{else}<span class="badge badge-fail">Exit: {$job['lastRun']['exitCode']}</span>{/if}</td>
+					<td>
+						<div class="sparkline-box">
+							<svg class="job-{$k}" width="240" height="28" stroke-width="2" {if $job['lastRun']['exitCode'] == 0}stroke="#16a34a" fill="rgba(22,163,74,0.12)"{else}stroke="#dc2626" fill="rgba(220,38,38,0.12)"{/if}></svg>
+							<span class="spark-tooltip" hidden="true"></span>
+						</div>
+						<script>Sparkline.draw(document.querySelector(".job-{$k}"), {$job['history']|history}, sparkOptions)</script>
+					</td>
+					<td class="tar mono">{eval echo sprintf("%.3fs", $job['lastRun']['duration'])}</td>
+					<td class="tar mono">{eval echo date("Y-m-d H:i:s", strtotime($job['lastRun']['stamp']))}</td>
+					{else}
+					<td colspan="4" class="empty-cell">No run history yet</td>
+					{/if}
+				</tr>
 				{/if}
-	</tr>
-			{/if}
-		{/foreach}
-
-		</tbody>
-		</table>
+			{else}
+				<tr><td colspan="5" class="empty-cell">No jobs found.</td></tr>
+			{/foreach}
+			</tbody>
+			</table>
+		</div>
 	</section>
+
 </div>
-
-<style>
-*[hidden] {
-  display: none;
-}
-
-.tooltip {
-  position: absolute;
-  background: rgba(0, 0, 0, .7);
-  color: #fff;
-  padding: 2px 5px;
-  font-size: 12px;
-  white-space: nowrap;
-  z-index: 9999;
-  opacity: 1;
-}
-
-.sparkline--cursor {
-  stroke: orange;
-}
-
-.sparkline--spot {
-  fill: red;
-  stroke: red;
-}
-</style>
 
 {load html_footer.tpl}

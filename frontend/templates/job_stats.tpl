@@ -1,163 +1,113 @@
 {load html_header.tpl}
 
-<style>
-input.form-control::placeholder {
-	opacity: .3;
-}
-</style>
-
-<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.4.0/Chart.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
 
 <div class="container">
-	<div class="row">
-		<div class="col-8">
-			<h2>{title}</h2>
+
+	<div class="page-head">
+		<div>
+			<h2>{title|escape}</h2>
+			<div class="subtitle">Run duration trends and log history</div>
 		</div>
-		<div class="col-4 tar">
-			<a class="btn btn-secondary" href="/">home</a>
+		<div class="page-actions">
+			<a class="btn btn-secondary" href="/">Dashboard</a>
 			<a class="btn btn-danger" href="/run/{job.jobName}">Run again</a>
 		</div>
 	</div>
 
-	<section class="contents">
-		<b>Daily stats</b>
-		<div class="wrapper">
-			<canvas id="chart-daily"></canvas>
+	<section class="panel">
+		<div class="panel__head">
+			<h2 class="panel__title">Duration statistics</h2>
 		</div>
-		<b>Monthly stats</b>
-		<div class="wrapper">
-			<canvas id="chart-monthly"></canvas>
+		<div class="panel__body--pad">
+			<div class="chart-grid">
+				<div class="chart-card">
+					<h3>Last 24 hours</h3>
+					<div class="chart-holder"><canvas id="chart-daily"></canvas></div>
+				</div>
+				<div class="chart-card">
+					<h3>Last 30 days</h3>
+					<div class="chart-holder"><canvas id="chart-monthly"></canvas></div>
+				</div>
+			</div>
 		</div>
 	</section>
 
-	<section class="contents">
-		<div class="input-group mb-3">
-			<input id="searchTextbox" type="text" class="form-control" placeholder="Search string" aria-label="Search string">
-			<div class="input-group-append">
-				<button id="searchButton" class="btn btn-outline-secondary" type="button" onclick="getSearch()">Search</button>
+	<section class="panel">
+		<div class="panel__head">
+			<h2 class="panel__title">Run log</h2>
+		</div>
+		<div class="panel__body--pad">
+			<div class="toolbar">
+				<input id="searchTextbox" type="text" class="form-control" placeholder="Search output string" aria-label="Search string">
+				<button id="searchButton" class="btn btn-primary" type="button" onclick="getSearch()">Search</button>
+				<button class="btn btn-secondary" type="button" onclick="reload()">Reload</button>
 			</div>
-			<div class="input-group-append">
-				<button class="btn btn-outline-secondary" type="button" onclick="reload()">Reload</button>
+			<div class="alert alert-warning" role="alert">
+				<b>Search</b> scans raw output and can be slow on large log tables — use sparingly.
 			</div>
 		</div>
-		<div class="alert alert-danger" role="alert">
-			Use <b>Search</b> with caution, major performance impact can occur!
+		<div class="panel__body">
+			<table class="table">
+			<thead>
+				<tr>
+					<th id="searchTitle" colspan="4"></th>
+				</tr>
+				<tr>
+					<th>ID</th>
+					<th>Status</th>
+					<th class="tar">Duration</th>
+					<th class="tar">Timestamp</th>
+				</tr>
+			</thead>
+			<tbody id="logresults">
+			{foreach $logs as $log}
+				<tr>
+					<td><a href="{log.link}">{log.id}</a></td>
+					<td>{log.exitCode}</td>
+					<td class="tar mono">{log.duration}</td>
+					<td class="tar mono">{log.date}</td>
+				</tr>
+			{else}
+				<tr><td colspan="4" class="empty-cell">No logs available.</td></tr>
+			{/foreach}
+			</tbody>
+			</table>
 		</div>
-
-		<table class="table table-striped table-sm">
-		<thead>
-			<tr>
-				<th id="searchTitle" colspan="4"></th>
-			</tr>
-			<tr>
-				<th>ID</th>
-				<th>Exit code</th>
-				<th>Duration</th>
-				<th>Timestamp</th>
-			</tr>
-		</thead>
-		<tbody id="logresults">
-		{foreach $logs as $log}
-			<tr>
-				<td><a href="{log.link}">{log.id}</a></td>
-				<td>{log.exitCode}</td>
-				<td>{log.duration}</td>
-				<td>{log.date}</td>
-			</tr>
-		{else}
-			<tr><td colspan="4">No logs available.</td></tr>
-		{/foreach}
-		</tbody>
-		</table>
-	</section>
-
-	<section class="contents">
-		<div class="row">
-			<div class="col-6">
-				<a id="linkPrevious" class="btn btn-primary" href="{job.link}?pageNumber={$job['pageNumber']-1}" {if $job['pageNumber'] == 0}onclick="return false;"{/if}>previous</a>
-				<a id="linkNext" class="btn btn-primary" href="{job.link}?pageNumber={$job['pageNumber']+1}">next</a>
+		<div class="pager">
+			<div class="page-actions">
+				<a id="linkPrevious" class="btn btn-secondary" href="{job.link}?pageNumber={$job['pageNumber']-1}" {if $job['pageNumber'] == 0}onclick="return false;"{/if}>&larr; Previous</a>
+				<a id="linkNext" class="btn btn-secondary" href="{job.link}?pageNumber={$job['pageNumber']+1}">Next &rarr;</a>
 			</div>
-			<div class="col-6 tar">
-				<a class="btn btn-secondary" href="/">home</a>
-			</div>
+		</div>
 	</section>
 </div>
 
-<style>
-#chart-daily,
-#chart-monthly {
-	height: 224px !important;
-}
-</style>
-
 <script>
-var ctx = document.getElementById('chart-daily').getContext('2d')
-new Chart(ctx, {
+var barOptions = {
+	maintainAspectRatio: false,
+	responsive: true,
+	scales: {
+		x: { grid: { display: false } },
+		y: { beginAtZero: true, grid: { color: 'rgba(148,163,184,0.2)' } }
+	},
+	plugins: {
+		legend: { position: 'bottom', labels: { boxWidth: 12, usePointStyle: true } },
+		tooltip: { displayColors: true }
+	}
+};
+
+new Chart(document.getElementById('chart-daily').getContext('2d'), {
 	type: 'bar',
 	data: {daily|json_encode},
-	options: {
-		tooltips: {
-			displayColors: true,
-			callbacks: {
-				mode: 'x',
-			},
-		},
-		scales: {
-			xAxes: [{
-				stacked: false,
-				gridLines: {
-					display: false,
-				}
-			}],
-			yAxes: [{
-				stacked: false,
-				ticks: {
-					beginAtZero: true,
-				},
-				type: 'linear',
-			}]
-		},
-		// responsive: true,
-		maintainAspectRatio: false,
-		legend: {
-			position: 'bottom',
-		},
-	}
-})
+	options: barOptions
+});
 
-var ctx2 = document.getElementById('chart-monthly').getContext('2d')
-new Chart(ctx2, {
+new Chart(document.getElementById('chart-monthly').getContext('2d'), {
 	type: 'bar',
 	data: {monthly|json_encode},
-	options: {
-		tooltips: {
-			displayColors: true,
-			callbacks: {
-				mode: 'x',
-			},
-		},
-		scales: {
-			xAxes: [{
-				stacked: false,
-				gridLines: {
-					display: false,
-				}
-			}],
-			yAxes: [{
-				stacked: false,
-				ticks: {
-					beginAtZero: true,
-				},
-				type: 'linear',
-			}]
-		},
-		// responsive: true,
-		maintainAspectRatio: false,
-		legend: {
-			position: 'bottom',
-		},
-	}
-})
+	options: barOptions
+});
 </script>
 
 <script>
@@ -168,7 +118,6 @@ searchTextbox.addEventListener("keyup", function(event) {
     searchButton.click();
   }
   if (searchTextbox.value.length == 0) {
-	console.log("Empty searchTextbox");
 	var linkPrevious = document.getElementById("linkPrevious");
 	linkPrevious.href = "{job.link}?pageNumber={$job['pageNumber']-1}";
 
@@ -222,17 +171,19 @@ function getSearch(pageNumber = 0) {
 
 				var ExitCode = document.createElement("td");
 				if (element.exitCode != 0) {
-					ExitCode.innerHTML = '<span class="badge badge-danger">Exit: ' + element.exitCode + '</span>';
+					ExitCode.innerHTML = '<span class="badge badge-fail">Exit: ' + element.exitCode + '</span>';
 				} else {
-					ExitCode.innerHTML = '<span class="badge badge-success">OK</span>';
+					ExitCode.innerHTML = '<span class="badge badge-ok">OK</span>';
 				}
 				row.appendChild(ExitCode);
 
 				var Duration = document.createElement("td");
+				Duration.className = "tar mono";
 				Duration.innerText = parseFloat(element.duration).toFixed(3) + "s";
 				row.appendChild(Duration);
 
 				var Timestamp = document.createElement("td");
+				Timestamp.className = "tar mono";
 				var t = new Date(element.stamp);
 				Timestamp.innerText = t.toISOString().slice(0, 19).replace('T', ' ');
 				row.appendChild(Timestamp);
@@ -243,11 +194,9 @@ function getSearch(pageNumber = 0) {
 			// make pagination
 			var linkPrevious = document.getElementById("linkPrevious");
 			linkPrevious.href = "javascript:showSearchPage(" + (searchPage-1) + ")";
-			//linkPrevious.addEventListener("click", showSearchPage(searchPage-1));
 
 			var linkNext = document.getElementById("linkNext");
 			linkNext.href = "javascript:showSearchPage(" + (searchPage+1) + ")";
-			//linkNext.addEventListener("click", showSearchPage(searchPage+1));
 		}
 		// enable SEARCH button
 		searchTextbox.disabled = false;
