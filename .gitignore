@@ -1,4 +1,7 @@
 *.db
+*.db-journal
+*.db-wal
+*.db-shm
 /bin
 /webcron
 /webcron.exe
