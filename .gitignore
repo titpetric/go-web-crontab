@@ -1,2 +1,5 @@
+*.db
+/bin
+/webcron
 /.env
 /build

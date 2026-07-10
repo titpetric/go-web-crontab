@@ -4,7 +4,6 @@ import (
 	"log"
 	"os"
 
-	_ "github.com/go-sql-driver/mysql"
 	_ "modernc.org/sqlite"
 
 	"github.com/titpetric/go-web-crontab/crontab"

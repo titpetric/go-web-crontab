@@ -26,7 +26,6 @@ func (s *Storage) SaveJob(name, description string) error {
 		Description: description,
 		CreatedAt:   &now,
 		UpdatedAt:   &now,
-		DeletedAt:   &now,
 	}
 
 	return s.db.Replace(context.Background(), "jobs", job)

@@ -197,6 +197,9 @@ type Logs struct {
 
 	// Exit Code
 	ExitCode int64 `db:"exit_code" json:"exit_code"`
+
+	// Created At
+	CreatedAt *time.Time `db:"created_at" json:"created_at"`
 }
 
 // GetName will return the value of Name.
@@ -229,11 +232,17 @@ func (l *Logs) GetExitCode() int64 { return l.ExitCode }
 // SetExitCode sets ExitCode to the provided value.
 func (l *Logs) SetExitCode(val int64) { l.ExitCode = val }
 
+// GetCreatedAt will return the value of CreatedAt.
+func (l *Logs) GetCreatedAt() *time.Time { return l.CreatedAt }
+
+// SetCreatedAt sets CreatedAt to the provided value.
+func (l *Logs) SetCreatedAt(stamp time.Time) { l.CreatedAt = &stamp }
+
 // LogsTable is the name of the table in the DB.
 const LogsTable = "`logs`"
 
 // LogsFields is a list of all columns in the DB table.
-var LogsFields = []string{"name", "stamp", "duration", "output", "exit_code"}
+var LogsFields = []string{"name", "stamp", "duration", "output", "exit_code", "created_at"}
 
 // LogsPrimaryFields are the primary key fields in the DB table.
 var LogsPrimaryFields = []string{"name", "stamp"}

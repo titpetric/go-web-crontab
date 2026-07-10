@@ -43,6 +43,7 @@ func (job *Job) Run(cron *Crontab) error {
 	cmd := exec.Command(command[0], command[1:]...)
 	cmd.Stdout = jobLog.Stdout()
 	cmd.Stderr = jobLog.Stderr()
+	cmd.Dir = cron.scriptPath
 
 	if err := cmd.Start(); err != nil {
 		// Log when a task fails

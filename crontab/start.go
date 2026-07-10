@@ -1,16 +1,24 @@
 package crontab
 
 import (
+	"context"
 	"fmt"
+	"log"
+	"os"
+	"os/signal"
 
-	"github.com/SentimensRG/sigctx"
+	"github.com/titpetric/platform"
 
 	"github.com/titpetric/go-web-crontab/schema"
 	"github.com/titpetric/go-web-crontab/storage"
+	"github.com/titpetric/go-web-crontab/web"
 )
 
+// Start validates configuration, launches the cron runners and web dashboard,
+// and blocks until an interrupt signal is received.
 func Start() error {
-	var ctx = sigctx.New()
+	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt)
+	defer stop()
 
 	// validate configuration
 	if err := config.Validate(); err != nil {
@@ -36,6 +44,9 @@ func Start() error {
 		return fmt.Errorf("Error loading Crontab configs: %w", err)
 	}
 
+	// start web dashboard
+	go startWeb(ctx, config.web.frontend)
+
 	err = cron.Start()
 	if err != nil {
 		return err
@@ -46,4 +57,22 @@ func Start() error {
 	cron.Shutdown()
 
 	return nil
+}
+
+// startWeb launches the platform-based web server for the admin dashboard.
+// It runs in a goroutine and respects the parent context for shutdown.
+func startWeb(ctx context.Context, frontendPath string) {
+	opts := platform.NewOptions()
+	opts.ServerAddr = config.web.addr
+
+	svc := platform.New(opts)
+	svc.Register(web.NewModule(frontendPath))
+
+	if err := svc.Start(ctx); err != nil {
+		log.Printf("Web dashboard error: %+v", err)
+		return
+	}
+
+	log.Printf("Web dashboard listening on %s", config.web.addr)
+	svc.Wait()
 }

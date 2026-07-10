@@ -16,9 +16,10 @@ import (
 )
 
 type Crontab struct {
-	db        *sqlx.DB
-	storage   *storage.Storage
-	scheduler *cron.Cron
+	db         *sqlx.DB
+	storage    *storage.Storage
+	scheduler  *cron.Cron
+	scriptPath string
 
 	Jobs *Jobs
 }
@@ -71,6 +72,8 @@ func (cron *Crontab) Shutdown() {
 }
 
 func (cron *Crontab) Load(configPath, scriptPath string) error {
+	cron.scriptPath = scriptPath
+
 	configs, err := filepath.Glob(configPath)
 	if err != nil {
 		return err
@@ -85,10 +88,6 @@ func (cron *Crontab) Load(configPath, scriptPath string) error {
 		}
 	} else {
 		return fmt.Errorf("No config files found: %s", configPath)
-	}
-
-	if err := os.Chdir(scriptPath); err != nil {
-		return fmt.Errorf("Can't change working directory: %w", err)
 	}
 	return nil
 }
