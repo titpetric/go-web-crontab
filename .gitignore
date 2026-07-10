@@ -1,5 +1,11 @@
 *.db
 /bin
 /webcron
+/webcron.exe
 /.env
 /build
+
+# Compiled templates are generated at runtime; never commit them (stale
+# compiled caches can shadow updated source templates).
+frontend/templates/cache/*
+!frontend/templates/cache/.gitkeep

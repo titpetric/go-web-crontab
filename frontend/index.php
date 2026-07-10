@@ -32,8 +32,15 @@ if (isset($_PATH["jobName"]) && $_PATH["jobName"] != "") {
 		$total = $totalRow["total"] + 0;
 	}
 
+	$description = "";
+	$descRow = $db->get("SELECT description FROM jobs WHERE name = ?", $jobName);
+	if ($descRow) {
+		$description = $descRow["description"];
+	}
+
 	$job = array(
 		"jobName" => $jobName,
+		"description" => $description,
 		"pageNumber" => $pageNumber,
 		"pageSize" => $pageSize,
 		"total" => $total,
