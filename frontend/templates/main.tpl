@@ -17,6 +17,26 @@ var sparkOptions = {
 		if (tip) { tip.hidden = true; }
 	}
 };
+
+// Draw all sparklines once the DOM and the Sparkline library are ready. Data
+// travels in each svg's data-history attribute so rendering never depends on
+// inline script execution order.
+function drawSparklines() {
+	if (typeof Sparkline === 'undefined') { return; }
+	var nodes = document.querySelectorAll('svg.sparkline[data-history]');
+	for (var i = 0; i < nodes.length; i++) {
+		var data;
+		try { data = JSON.parse(nodes[i].getAttribute('data-history')); }
+		catch (e) { data = []; }
+		Sparkline.draw(nodes[i], data, sparkOptions);
+	}
+}
+
+if (document.readyState === 'loading') {
+	document.addEventListener('DOMContentLoaded', drawSparklines);
+} else {
+	drawSparklines();
+}
 </script>
 
 <div class="container">
@@ -83,10 +103,9 @@ var sparkOptions = {
 					<td>{if $job['lastRun']['exitCode'] == 0}<span class="badge badge-ok">OK</span>{else}<span class="badge badge-fail">Exit: {$job['lastRun']['exitCode']}</span>{/if}</td>
 					<td>
 						<div class="sparkline-box">
-							<svg class="job-{$k}" width="240" height="28" stroke-width="2" {if $job['lastRun']['exitCode'] == 0}stroke="#16a34a" fill="rgba(22,163,74,0.12)"{else}stroke="#dc2626" fill="rgba(220,38,38,0.12)"{/if}></svg>
+							<svg class="sparkline" width="240" height="28" stroke-width="2" {if $job['lastRun']['exitCode'] == 0}stroke="#16a34a" fill="rgba(22,163,74,0.12)"{else}stroke="#dc2626" fill="rgba(220,38,38,0.12)"{/if} data-history='{$job['history']|history}'></svg>
 							<span class="spark-tooltip" hidden="true"></span>
 						</div>
-						<script>Sparkline.draw(document.querySelector(".job-{$k}"), {$job['history']|history}, sparkOptions)</script>
 					</td>
 					<td class="tar mono">{eval echo sprintf("%.3fs", $job['lastRun']['duration'])}</td>
 					<td class="tar mono">{eval echo date("Y-m-d H:i:s", strtotime($job['lastRun']['stamp']))}</td>
@@ -135,10 +154,9 @@ var sparkOptions = {
 					<td>{if $job['lastRun']['exitCode'] == 0}<span class="badge badge-ok">OK</span>{else}<span class="badge badge-fail">Exit: {$job['lastRun']['exitCode']}</span>{/if}</td>
 					<td>
 						<div class="sparkline-box">
-							<svg class="job-{$k}" width="240" height="28" stroke-width="2" {if $job['lastRun']['exitCode'] == 0}stroke="#16a34a" fill="rgba(22,163,74,0.12)"{else}stroke="#dc2626" fill="rgba(220,38,38,0.12)"{/if}></svg>
+							<svg class="sparkline" width="240" height="28" stroke-width="2" {if $job['lastRun']['exitCode'] == 0}stroke="#16a34a" fill="rgba(22,163,74,0.12)"{else}stroke="#dc2626" fill="rgba(220,38,38,0.12)"{/if} data-history='{$job['history']|history}'></svg>
 							<span class="spark-tooltip" hidden="true"></span>
 						</div>
-						<script>Sparkline.draw(document.querySelector(".job-{$k}"), {$job['history']|history}, sparkOptions)</script>
 					</td>
 					<td class="tar mono">{eval echo sprintf("%.3fs", $job['lastRun']['duration'])}</td>
 					<td class="tar mono">{eval echo date("Y-m-d H:i:s", strtotime($job['lastRun']['stamp']))}</td>
