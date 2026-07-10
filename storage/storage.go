@@ -19,7 +19,7 @@ func NewStorage(handle *sqlx.DB) *Storage {
 	}
 }
 
-func (s *Storage) SaveJob(name, description string) error {
+func (s *Storage) SaveJob(ctx context.Context, name, description string) error {
 	now := time.Now()
 	job := model.Jobs{
 		Name:        name,
@@ -27,11 +27,10 @@ func (s *Storage) SaveJob(name, description string) error {
 		CreatedAt:   &now,
 		UpdatedAt:   &now,
 	}
-
-	return s.db.Replace(context.Background(), "jobs", job)
+	return s.db.Replace(ctx, "jobs", job)
 }
 
-func (s *Storage) SaveLog(name string, stamp time.Time, duration time.Duration, output string, exitCode int) error {
+func (s *Storage) SaveLog(ctx context.Context, name string, stamp time.Time, duration time.Duration, output string, exitCode int) error {
 	log := model.Logs{
 		Name:     name,
 		Stamp:    &stamp,
@@ -40,5 +39,5 @@ func (s *Storage) SaveLog(name string, stamp time.Time, duration time.Duration, 
 		ExitCode: int64(exitCode),
 	}
 
-	return s.db.Insert(context.Background(), "logs", log)
+	return s.db.Insert(ctx, "logs", log)
 }

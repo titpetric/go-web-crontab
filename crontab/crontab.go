@@ -2,6 +2,7 @@ package crontab
 
 import (
 	"bufio"
+	"context"
 	"fmt"
 	"log"
 	"os"
@@ -16,7 +17,6 @@ import (
 )
 
 type Crontab struct {
-	db         *sqlx.DB
 	storage    *storage.Storage
 	scheduler  *cron.Cron
 	scriptPath string
@@ -28,7 +28,6 @@ func NewCrontab(db *sqlx.DB) (*Crontab, error) {
 	var err error
 
 	cron := &Crontab{
-		db:      db,
 		storage: storage.NewStorage(db),
 		scheduler: cron.New(
 			cron.WithParser(
@@ -81,7 +80,7 @@ func (cron *Crontab) Load(configPath, scriptPath string) error {
 
 	if len(configs) > 0 {
 		for _, filename := range configs {
-			err = cron.loadConfig(filename, scriptPath)
+			err = cron.loadConfig(context.TODO(), filename, scriptPath)
 			if err != nil {
 				return fmt.Errorf("Error loading config: %w", err)
 			}
@@ -92,7 +91,7 @@ func (cron *Crontab) Load(configPath, scriptPath string) error {
 	return nil
 }
 
-func (cron *Crontab) loadConfig(filename, scriptPath string) error {
+func (cron *Crontab) loadConfig(ctx context.Context, filename, scriptPath string) error {
 	log.Println("Loading config:", filename)
 	file, err := os.Open(filename)
 	if err != nil {
@@ -138,7 +137,7 @@ func (cron *Crontab) loadConfig(filename, scriptPath string) error {
 			Schedule: schedule,
 		}
 
-		if err := cron.storage.SaveJob(job.Name, job.Description); err != nil {
+		if err := cron.storage.SaveJob(ctx, job.Name, job.Description); err != nil {
 			return fmt.Errorf("Couldn't save job %s: %w", job.Name, err)
 		}
 

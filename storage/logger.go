@@ -1,6 +1,7 @@
-package logger
+package storage
 
 import (
+	"context"
 	"fmt"
 	"os"
 	"os/exec"
@@ -10,9 +11,7 @@ import (
 	"github.com/apex/log"
 	"github.com/apex/log/handlers/cli"
 	"github.com/apex/log/handlers/json"
-	"github.com/jmoiron/sqlx"
 	"github.com/jmoiron/sqlx/types"
-	"github.com/titpetric/go-web-crontab/storage"
 )
 
 // Log provides methods for easy logging. This should be used for each
@@ -148,7 +147,7 @@ func (l *Log) flushStdout() {
 
 // Finish finalizes the logs and write to the database. The error field should
 // be for the command's error.
-func (l *Log) Finish(db *sqlx.DB, err error) (*LogEntry, error) {
+func (l *Log) Finish(storage *Storage, err error) (*LogEntry, error) {
 	l.mu.Lock()
 	defer l.mu.Unlock()
 
@@ -194,5 +193,7 @@ func (l *Log) Finish(db *sqlx.DB, err error) (*LogEntry, error) {
 		return nil, fmt.Errorf("Couldn't scan JSON: %w", err)
 	}
 
-	return dbLog, storage.NewStorage(db).SaveLog(dbLog.Name, dbLog.Stamp, dbLog.Duration, string(dbLog.Output), dbLog.ExitCode)
+	ctx := context.Background()
+
+	return dbLog, storage.SaveLog(ctx, dbLog.Name, dbLog.Stamp, dbLog.Duration, string(dbLog.Output), dbLog.ExitCode)
 }

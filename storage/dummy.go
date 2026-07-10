@@ -1,4 +1,4 @@
-package logger
+package storage
 
 // These two structs are dummy structs that implement Write() to satisfy
 // io.Writer.

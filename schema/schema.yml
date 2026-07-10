@@ -55,10 +55,6 @@
       comment: Exit Code
       datatype: bigint
       size: 8
-    - name: created_at
-      type: timestamp
-      comment: Created At
-      datatype: timestamp
   indexes:
     - name: sqlite_autoindex_logs_1
       columns:
