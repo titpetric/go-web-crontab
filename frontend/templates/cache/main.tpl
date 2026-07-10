@@ -77,9 +77,21 @@ var sparkOptions = {
 				<?php if($_v['job']['active'] == 1 && strpos($_v['job']['name'], "onetime/") !== false){?>
 
 				<tr>
-					<td class="job-name"><a href="/<?php echo $_v['job']['name'];?>
+					<td class="job-name">
+						<div class="job-name__row">
+							<a href="/<?php echo $_v['job']['name'];?>
 "><code><?php echo $_v['job']['name'];?>
-</code></a></td>
+</code></a>
+							<button class="icon-btn" type="button" title="Edit description" data-name="<?php echo htmlspecialchars($_v['job']['name'], ENT_QUOTES);?>
+" data-desc="<?php echo htmlspecialchars($_v['job']['description'], ENT_QUOTES);?>
+" onclick="openDescModal(this)" aria-label="Edit description">
+								<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"></path><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"></path></svg>
+							</button>
+						</div>
+						<?php if(!empty($_v['job']['description'])){?>
+<div class="job-desc"><?php echo htmlspecialchars($_v['job']['description'], ENT_QUOTES);?>
+</div><?php }?>
+					</td>
 					<?php if(!empty($_v['job']['lastRun'])){?>
 
 					<td><?php if($_v['job']['lastRun']['exitCode'] == 0){?>
@@ -137,9 +149,21 @@ stroke="#dc2626" fill="rgba(220,38,38,0.12)"<?php }?>></svg>
 				<?php if($_v['job']['active'] == 1 && strpos($_v['job']['name'], "onetime/") === false){?>
 
 				<tr>
-					<td class="job-name"><a href="/<?php echo $_v['job']['name'];?>
+					<td class="job-name">
+						<div class="job-name__row">
+							<a href="/<?php echo $_v['job']['name'];?>
 "><code><?php echo $_v['job']['name'];?>
-</code></a></td>
+</code></a>
+							<button class="icon-btn" type="button" title="Edit description" data-name="<?php echo htmlspecialchars($_v['job']['name'], ENT_QUOTES);?>
+" data-desc="<?php echo htmlspecialchars($_v['job']['description'], ENT_QUOTES);?>
+" onclick="openDescModal(this)" aria-label="Edit description">
+								<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"></path><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"></path></svg>
+							</button>
+						</div>
+						<?php if(!empty($_v['job']['description'])){?>
+<div class="job-desc"><?php echo htmlspecialchars($_v['job']['description'], ENT_QUOTES);?>
+</div><?php }?>
+					</td>
 					<?php if(!empty($_v['job']['lastRun'])){?>
 
 					<td><?php if($_v['job']['lastRun']['exitCode'] == 0){?>
@@ -178,6 +202,67 @@ stroke="#dc2626" fill="rgba(220,38,38,0.12)"<?php }?>></svg>
 	</section>
 
 </div>
+
+<div id="descModal" class="modal-overlay" hidden>
+	<div class="modal">
+		<div class="modal__head">
+			<span>Edit description</span>
+			<button class="icon-btn" type="button" onclick="closeDescModal()" aria-label="Close">&times;</button>
+		</div>
+		<div class="modal__body">
+			<div class="modal__label" id="descJobName"></div>
+			<textarea id="descText" class="form-control" rows="4" placeholder="Describe what this job does…"></textarea>
+			<div id="descError" class="alert alert-danger" hidden></div>
+		</div>
+		<div class="modal__foot">
+			<button class="btn btn-secondary" type="button" onclick="closeDescModal()">Cancel</button>
+			<button class="btn btn-primary" type="button" onclick="saveDesc()">Save</button>
+		</div>
+	</div>
+</div>
+
+<script>
+var descName = null;
+
+function openDescModal(btn) {
+	descName = btn.getAttribute('data-name');
+	document.getElementById('descJobName').textContent = descName;
+	document.getElementById('descText').value = btn.getAttribute('data-desc') || '';
+	var err = document.getElementById('descError');
+	err.hidden = true;
+	err.textContent = '';
+	document.getElementById('descModal').hidden = false;
+	document.getElementById('descText').focus();
+}
+
+function closeDescModal() {
+	document.getElementById('descModal').hidden = true;
+}
+
+function showDescError(msg) {
+	var err = document.getElementById('descError');
+	err.textContent = msg;
+	err.hidden = false;
+}
+
+function saveDesc() {
+	if (!descName) { return; }
+	var body = new FormData();
+	body.append('name', descName);
+	body.append('description', document.getElementById('descText').value);
+	fetch('/description', { method: 'POST', body: body })
+		.then(function (r) { return r.json(); })
+		.then(function (data) {
+			if (data && data.ok) { location.reload(); }
+			else { showDescError((data && data.err) || 'Save failed'); }
+		})
+		.catch(function () { showDescError('Network error'); });
+}
+
+document.addEventListener('keydown', function (event) {
+	if (event.key === 'Escape') { closeDescModal(); }
+});
+</script>
 
 <?php $this->push();$this->load("html_footer.tpl");$this->assign($_v);$this->render();$this->pop();?>
 

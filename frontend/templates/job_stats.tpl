@@ -1,6 +1,8 @@
 {load html_header.tpl}
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xterm/xterm@5.5.0/css/xterm.min.css">
+<script src="https://cdn.jsdelivr.net/npm/@xterm/xterm@5.5.0/lib/xterm.min.js"></script>
 
 <div class="container">
 
@@ -11,7 +13,7 @@
 		</div>
 		<div class="page-actions">
 			<a class="btn btn-secondary" href="/">Dashboard</a>
-			<a class="btn btn-danger" href="/run/{job.jobName}">Run again</a>
+			<button class="btn btn-danger" type="button" onclick="runJob()">Run again</button>
 		</div>
 	</div>
 
@@ -75,12 +77,35 @@
 			</table>
 		</div>
 		<div class="pager">
+			<div class="pager__info">
+				<span id="pagerInfo">{if $job['total'] > 0}Showing {job.firstRow}&ndash;{job.lastRow} of {job.total}{else}No runs recorded{/if}</span>
+				<label class="pager__size">
+					Per page
+					<select id="pageSizeSelect" class="form-control" onchange="changePageSize(this.value)">
+						<option value="20" {if $job['pageSize'] == 20}selected{/if}>20</option>
+						<option value="50" {if $job['pageSize'] == 50}selected{/if}>50</option>
+						<option value="100" {if $job['pageSize'] == 100}selected{/if}>100</option>
+					</select>
+				</label>
+			</div>
 			<div class="page-actions">
-				<a id="linkPrevious" class="btn btn-secondary" href="{job.link}?pageNumber={$job['pageNumber']-1}" {if $job['pageNumber'] == 0}onclick="return false;"{/if}>&larr; Previous</a>
-				<a id="linkNext" class="btn btn-secondary" href="{job.link}?pageNumber={$job['pageNumber']+1}">Next &rarr;</a>
+				<a id="linkPrevious" class="btn btn-secondary {if !$job['hasPrev']}is-disabled{/if}" href="{job.link}?pageNumber={$job['pageNumber']-1}&pageSize={job.pageSize}" {if !$job['hasPrev']}onclick="return false;"{/if}>&larr; Previous</a>
+				<a id="linkNext" class="btn btn-secondary {if !$job['hasNext']}is-disabled{/if}" href="{job.link}?pageNumber={$job['pageNumber']+1}&pageSize={job.pageSize}" {if !$job['hasNext']}onclick="return false;"{/if}>Next &rarr;</a>
 			</div>
 		</div>
 	</section>
+</div>
+
+<div id="termModal" class="modal-overlay" hidden>
+	<div class="modal modal--wide">
+		<div class="modal__head">
+			<span>Run <code>{$job['jobName']|escape}</code></span>
+			<button class="icon-btn" type="button" onclick="closeTerm()" aria-label="Close">&times;</button>
+		</div>
+		<div class="modal__body">
+			<div id="terminal" class="terminal-box"></div>
+		</div>
+	</div>
 </div>
 
 <script>
@@ -119,11 +144,44 @@ searchTextbox.addEventListener("keyup", function(event) {
   }
   if (searchTextbox.value.length == 0) {
 	var linkPrevious = document.getElementById("linkPrevious");
-	linkPrevious.href = "{job.link}?pageNumber={$job['pageNumber']-1}";
+	linkPrevious.href = "{job.link}?pageNumber={$job['pageNumber']-1}&pageSize={job.pageSize}";
 
 	var linkNext = document.getElementById("linkNext");
-	linkNext.href="{job.link}?pageNumber={$job['pageNumber']+1}";
+	linkNext.href="{job.link}?pageNumber={$job['pageNumber']+1}&pageSize={job.pageSize}";
   }
+});
+
+function changePageSize(size) {
+	window.location.href = "{job.link}?pageNumber=0&pageSize=" + size;
+}
+
+// Run again: open a non-interactive terminal streamed over a websocket.
+var _termWs = null;
+function runJob() {
+	var overlay = document.getElementById('termModal');
+	var host = document.getElementById('terminal');
+	host.innerHTML = '';
+	overlay.hidden = false;
+
+	var term = new Terminal({ convertEol: true, fontSize: 13, cursorBlink: false, theme: { background: '#0b1120', foreground: '#e2e8f0' } });
+	term.open(host);
+	term.write('Connecting…\r\n');
+
+	var proto = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+	var ws = new WebSocket(proto + '//' + window.location.host + '/ws/run/' + encodeURI("{$job['jobName']}"));
+	_termWs = ws;
+	ws.onmessage = function (event) { term.write(event.data); };
+	ws.onclose = function () { term.write('\r\n[session closed]\r\n'); };
+	ws.onerror = function () { term.write('\r\n[connection error]\r\n'); };
+}
+
+function closeTerm() {
+	if (_termWs) { _termWs.close(); _termWs = null; }
+	document.getElementById('termModal').hidden = true;
+}
+
+document.addEventListener('keydown', function (event) {
+	if (event.key === 'Escape') { closeTerm(); }
 });
 
 // search

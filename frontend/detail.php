@@ -6,7 +6,7 @@
 include("bootstrap.php");
 
 $jobName = route_job_name();
-$ID = $_PATH["ID"] + 0;
+$ID = (int)$_PATH["ID"];
 
 $row = $db->get("SELECT output FROM (SELECT ROW_NUMBER() OVER (ORDER BY stamp DESC) AS ID, output FROM logs WHERE name = ?) WHERE ID = ?", $jobName, $ID);
 

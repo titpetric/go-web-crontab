@@ -45,7 +45,7 @@ func Start() error {
 	}
 
 	// start web dashboard
-	go startWeb(ctx, config.web.frontend)
+	go startWeb(ctx, config.web.frontend, config.crontab.scriptPath)
 
 	err = cron.Start()
 	if err != nil {
@@ -61,12 +61,12 @@ func Start() error {
 
 // startWeb launches the platform-based web server for the admin dashboard.
 // It runs in a goroutine and respects the parent context for shutdown.
-func startWeb(ctx context.Context, frontendPath string) {
+func startWeb(ctx context.Context, frontendPath, scriptPath string) {
 	opts := platform.NewOptions()
 	opts.ServerAddr = config.web.addr
 
 	svc := platform.New(opts)
-	svc.Register(web.NewModule(frontendPath))
+	svc.Register(web.NewModule(frontendPath, scriptPath))
 
 	if err := svc.Start(ctx); err != nil {
 		log.Printf("Web dashboard error: %+v", err)
