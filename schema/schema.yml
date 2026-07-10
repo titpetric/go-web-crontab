@@ -1,0 +1,93 @@
+- name: jobs
+  comment: Jobs
+  columns:
+    - name: name
+      type: text
+      key: PRI
+      comment: Name
+      datatype: varchar
+    - name: description
+      type: text
+      comment: Description
+      datatype: varchar
+    - name: created_at
+      type: timestamp
+      comment: Created At
+      datatype: timestamp
+    - name: updated_at
+      type: timestamp
+      comment: Updated At
+      datatype: timestamp
+    - name: deleted_at
+      type: timestamp
+      comment: Deleted At
+      datatype: timestamp
+  indexes:
+    - name: sqlite_autoindex_jobs_1
+      columns:
+        - name
+      primary: true
+      unique: true
+- name: logs
+  comment: Logs
+  columns:
+    - name: name
+      type: text
+      key: PRI
+      comment: Name
+      datatype: varchar
+    - name: stamp
+      type: timestamp
+      key: PRI
+      comment: Stamp
+      datatype: timestamp
+    - name: duration
+      type: integer
+      comment: Duration
+      datatype: bigint
+      size: 8
+    - name: output
+      type: text
+      comment: Output
+      datatype: varchar
+    - name: exit_code
+      type: integer
+      comment: Exit Code
+      datatype: bigint
+      size: 8
+  indexes:
+    - name: sqlite_autoindex_logs_1
+      columns:
+        - name
+        - stamp
+      primary: true
+      unique: true
+- name: migrations
+  comment: Migrations
+  columns:
+    - name: project
+      type: text
+      key: PRI
+      comment: Project
+      datatype: varchar
+    - name: filename
+      type: text
+      key: PRI
+      comment: Filename
+      datatype: varchar
+    - name: statement_index
+      type: integer
+      comment: Statement Index
+      datatype: bigint
+      size: 8
+    - name: status
+      type: text
+      comment: Status
+      datatype: varchar
+  indexes:
+    - name: sqlite_autoindex_migrations_1
+      columns:
+        - project
+        - filename
+      primary: true
+      unique: true

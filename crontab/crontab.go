@@ -1,7 +1,8 @@
-package service
+package crontab
 
 import (
 	"bufio"
+	"fmt"
 	"log"
 	"os"
 	"path/filepath"
@@ -10,12 +11,13 @@ import (
 	"strings"
 
 	"github.com/jmoiron/sqlx"
-	"github.com/pkg/errors"
 	"github.com/robfig/cron/v3"
+	"github.com/titpetric/go-web-crontab/storage"
 )
 
 type Crontab struct {
 	db        *sqlx.DB
+	storage   *storage.Storage
 	scheduler *cron.Cron
 
 	Jobs *Jobs
@@ -25,7 +27,8 @@ func NewCrontab(db *sqlx.DB) (*Crontab, error) {
 	var err error
 
 	cron := &Crontab{
-		db: db,
+		db:      db,
+		storage: storage.NewStorage(db),
 		scheduler: cron.New(
 			cron.WithParser(
 				cron.NewParser(
@@ -77,14 +80,17 @@ func (cron *Crontab) Load(configPath, scriptPath string) error {
 		for _, filename := range configs {
 			err = cron.loadConfig(filename, scriptPath)
 			if err != nil {
-				return errors.Wrap(err, "Error loading config")
+				return fmt.Errorf("Error loading config: %w", err)
 			}
 		}
 	} else {
-		return errors.New("No config files found: " + configPath)
+		return fmt.Errorf("No config files found: %s", configPath)
 	}
 
-	return errors.Wrap(os.Chdir(scriptPath), "Can't change working directory")
+	if err := os.Chdir(scriptPath); err != nil {
+		return fmt.Errorf("Can't change working directory: %w", err)
+	}
+	return nil
 }
 
 func (cron *Crontab) loadConfig(filename, scriptPath string) error {
@@ -110,12 +116,12 @@ func (cron *Crontab) loadConfig(filename, scriptPath string) error {
 		// parse
 		lineExp := regexp.MustCompile("[\t ]+").Split(line, -1)
 		if len(lineExp) < 8 || len(lineExp) > 9 {
-			return errors.Errorf("Must have 8 or 9 items per line, found %d: %s", len(lineExp), marker)
+			return fmt.Errorf("Must have 8 or 9 items per line, found %d: %s", len(lineExp), marker)
 		}
 
 		command := filepath.Join(scriptPath, lineExp[len(lineExp)-1])
 		if _, err := os.Stat(command); err != nil {
-			return errors.Errorf("Script %s missing, file: %s, err: %s", command, marker, err)
+			return fmt.Errorf("Script %s missing, file: %s, err: %w", command, marker, err)
 		}
 
 		// prefix 0 seconds if crontab style format
@@ -133,9 +139,9 @@ func (cron *Crontab) loadConfig(filename, scriptPath string) error {
 			Schedule: schedule,
 		}
 
-		// Only name and description are stored. This makes sure all the names
-		// are added when the crontab service is started.
-		cron.db.NamedExec("insert into jobs (name) values (:name)", job)
+		if err := cron.storage.SaveJob(job.Name, job.Description); err != nil {
+			return fmt.Errorf("Couldn't save job %s: %w", job.Name, err)
+		}
 
 		cron.Jobs.jobs = append(cron.Jobs.jobs, job)
 

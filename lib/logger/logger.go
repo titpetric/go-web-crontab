@@ -1,6 +1,7 @@
 package logger
 
 import (
+	"fmt"
 	"os"
 	"os/exec"
 	"sync"
@@ -11,7 +12,7 @@ import (
 	"github.com/apex/log/handlers/json"
 	"github.com/jmoiron/sqlx"
 	"github.com/jmoiron/sqlx/types"
-	"github.com/pkg/errors"
+	"github.com/titpetric/go-web-crontab/storage"
 )
 
 // Log provides methods for easy logging. This should be used for each
@@ -168,7 +169,7 @@ func (l *Log) Finish(db *sqlx.DB, err error) (*LogEntry, error) {
 		}
 
 		// Wrap the error
-		err = errors.Wrap(err, "Couldn't finish job "+l.jobname)
+		err = fmt.Errorf("Couldn't finish job %s: %w", l.jobname, err)
 
 		if err != nil {
 			// Log the error to the application's stderr
@@ -190,10 +191,8 @@ func (l *Log) Finish(db *sqlx.DB, err error) (*LogEntry, error) {
 
 	// Scan the outputs into the JSON
 	if err := dbLog.Output.Scan(l.jsonWriter.String()); err != nil {
-		return nil, errors.Wrap(err, "Couldn't scan JSON")
+		return nil, fmt.Errorf("Couldn't scan JSON: %w", err)
 	}
 
-	sql := "insert into logs (name, stamp, duration, output, exit_code) values (:name, :stamp, :duration, :output, :exit_code)"
-	_, err = db.NamedExec(sql, dbLog)
-	return dbLog, err
+	return dbLog, storage.NewStorage(db).SaveLog(dbLog.Name, dbLog.Stamp, dbLog.Duration, string(dbLog.Output), dbLog.ExitCode)
 }

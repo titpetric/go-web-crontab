@@ -8,7 +8,6 @@ import (
 	_ "modernc.org/sqlite"
 
 	"github.com/titpetric/go-web-crontab/crontab"
-	"github.com/titpetric/go-web-crontab/internal/service"
 )
 
 func main() {
@@ -18,7 +17,7 @@ func main() {
 	log.SetOutput(os.Stdout)
 	log.SetFlags(log.LstdFlags | log.Lshortfile)
 
-	go service.NewMonitor(config.monitorInterval)
+	go crontab.NewMonitor(config.monitorInterval)
 
 	if err := crontab.Start(); err != nil {
 		log.Fatalf("Error starting/running: %+v", err)

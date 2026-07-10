@@ -1,14 +1,12 @@
 package crontab
 
 import (
-	"time"
+	"fmt"
 
 	"github.com/SentimensRG/sigctx"
-	"github.com/go-bridget/mig/db"
-	"github.com/pkg/errors"
 
-	migrations "github.com/titpetric/go-web-crontab/internal/db"
-	"github.com/titpetric/go-web-crontab/internal/service"
+	"github.com/titpetric/go-web-crontab/schema"
+	"github.com/titpetric/go-web-crontab/storage"
 )
 
 func Start() error {
@@ -19,37 +17,23 @@ func Start() error {
 		return err
 	}
 
-	options := &db.Options{
-		Credentials: db.Credentials{
-			DSN:    config.db.dsn,
-			Driver: config.db.driver,
-		},
-		Retries:        100,
-		RetryDelay:     2 * time.Second,
-		ConnectTimeout: 2 * time.Minute,
-	}
-
-	handle, err := db.ConnectWithRetry(ctx, options)
+	handle, err := storage.DB(ctx)
 	if err != nil {
 		return err
 	}
-
-	handle.SetMaxOpenConns(1)
-	handle.SetConnMaxLifetime(30 * 24 * time.Hour)
-
-	if err := migrations.Migrate(handle, options.Credentials.Driver); err != nil {
-		return err
+	if err := storage.Migrate(ctx, handle, schema.Migrations()); err != nil {
+		return fmt.Errorf("Error applying Crontab migrations: %w", err)
 	}
 
 	// crontab package
-	cron, err := service.NewCrontab(handle)
+	cron, err := NewCrontab(handle)
 	if err != nil {
-		return errors.Wrap(err, "Error creating Crontab object")
+		return fmt.Errorf("Error creating Crontab object: %w", err)
 	}
 
 	err = cron.Load(config.crontab.configPath, config.crontab.scriptPath)
 	if err != nil {
-		return errors.Wrap(err, "Error loading Crontab configs")
+		return fmt.Errorf("Error loading Crontab configs: %w", err)
 	}
 
 	err = cron.Start()

@@ -1,16 +1,16 @@
-package service
+package crontab
 
 import (
+	"fmt"
 	"os/exec"
 	"strings"
 
-	"github.com/pkg/errors"
-	"github.com/titpetric/factory"
-	"github.com/titpetric/go-web-crontab/internal/logger"
+	"github.com/titpetric/go-web-crontab/lib"
+	"github.com/titpetric/go-web-crontab/lib/logger"
 )
 
 type Job struct {
-	factory.Semaphore
+	lib.Semaphore
 	cancel chan bool
 
 	Name        string `db:"name"`
@@ -47,10 +47,10 @@ func (job *Job) Run(cron *Crontab) error {
 	if err := cmd.Start(); err != nil {
 		// Log when a task fails
 		if _, err := jobLog.Finish(cron.db, err); err != nil {
-			return errors.Wrap(err, "Couldn't run job "+job.Name+" and save to db")
+			return fmt.Errorf("Couldn't run job %s and save to db: %w", job.Name, err)
 		}
 
-		return errors.Wrap(err, "Can't run command")
+		return fmt.Errorf("Can't run command: %w", err)
 	}
 
 	var done = make(chan error, 1)
@@ -62,17 +62,19 @@ func (job *Job) Run(cron *Crontab) error {
 	case <-job.cancel:
 		if err := cmd.Process.Kill(); err != nil {
 			if _, dberr := jobLog.Finish(cron.db, err); dberr != nil {
-				return errors.Wrap(dberr, "Couldn't stop job "+job.Name+" and save to db")
+				return fmt.Errorf("Couldn't stop job %s and save to db: %w", job.Name, dberr)
 			}
 
-			return errors.Wrap(err, "Couldn't stop job "+job.Name)
+			return fmt.Errorf("Couldn't stop job %s: %w", job.Name, err)
 		}
 	case cmdError := <-done:
 		if _, err := jobLog.Finish(cron.db, cmdError); err != nil {
-			return errors.Wrap(err, "Couldn't finish job "+job.Name+" and save to db")
+			return fmt.Errorf("Couldn't finish job %s and save to db: %w", job.Name, err)
 		}
 
-		return errors.Wrap(cmdError, "Couldn't finish job "+job.Name)
+		if cmdError != nil {
+			return fmt.Errorf("Couldn't finish job %s: %w", job.Name, cmdError)
+		}
 	}
 
 	return nil
