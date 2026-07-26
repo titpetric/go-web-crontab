@@ -1,6 +1,10 @@
 # go-web-crontab
 
-A crontab-like executor with an API.
+A crontab-like executor with an web front end and API.
+
+![](docs/assets/webcron-index.png)
+
+![](docs/assets/webcron-detail.png)
 
 The project uses a few core packages to bind together functionality:
 
