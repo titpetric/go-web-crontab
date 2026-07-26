@@ -58,6 +58,7 @@ func (m *Module) Mount(ctx context.Context, r platform.Router) error {
 		rt.SetIncludeCache(m.includeCache)
 		rt.SetExprCache(m.exprCache)
 		stdlib.RegisterFS(rt, m.root)
+		stdlib.Register(rt)
 		registerHelpers(rt)
 	}))
 	if err != nil {
@@ -181,6 +182,7 @@ func registerHelpers(rt *runner.Runtime) {
 
 	rt.RegisterFunc("strtotime", func(value string) int64 {
 		for _, layout := range []string{
+			"2006-01-02 15:04:05 -0700 MST",
 			"2006-01-02 15:04:05-07:00",
 			"2006-01-02 15:04:05",
 			"2006-01-02T15:04:05Z07:00",

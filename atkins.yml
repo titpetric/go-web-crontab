@@ -1,0 +1,15 @@
+tasks:
+  default:
+    default: "Run stuff"
+    passthru: true
+    cmds:
+      - go fmt ./...
+      - go mod tidy
+      - goimports -w .
+      - go install ./cmd/...
+
+  run:
+    desc: "Run webcron"
+    tty: true
+    cmds:
+      - PLATFORM_DB_CRONTAB='sqlite://webcron.db?_time_format=sqlite' webcron
