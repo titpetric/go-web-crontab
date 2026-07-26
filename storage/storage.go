@@ -27,9 +27,9 @@ func (s *Storage) SaveJob(ctx context.Context, name, description string) error {
 	// The config sync passes an empty description, so keep any existing
 	// (potentially user-edited) description instead of clobbering it on reload.
 	if description == "" {
-		var existing string
-		if err := s.handle.GetContext(ctx, &existing, "SELECT description FROM jobs WHERE name = ?", name); err == nil {
-			description = existing
+		existing, err := s.db.Get[string](ctx, "SELECT description FROM jobs WHERE name=?", name)
+		if err == nil {
+			description = *existing
 		}
 	}
 
