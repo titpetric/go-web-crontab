@@ -10,14 +10,12 @@ import (
 )
 
 type Storage struct {
-	db     *pdo.PDO
-	handle *sqlx.DB
+	db *pdo.PDO
 }
 
 func NewStorage(handle *sqlx.DB) *Storage {
 	return &Storage{
-		db:     pdo.New(handle),
-		handle: handle,
+		db: pdo.New(handle),
 	}
 }
 
