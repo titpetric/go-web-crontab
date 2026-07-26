@@ -82,8 +82,8 @@ if (document.readyState === 'loading') {
 					<th>Script</th>
 					<th>Status</th>
 					<th>History</th>
-					<th class="tar">Duration</th>
-					<th class="tar">Last run</th>
+					<th>Duration</th>
+					<th>Last run</th>
 				</tr>
 			</thead>
 			<tbody>
@@ -107,8 +107,8 @@ if (document.readyState === 'loading') {
 							<span class="spark-tooltip" hidden="true"></span>
 						</div>
 					</td>
-					<td class="tar mono">{eval echo sprintf("%.3fs", $job['lastRun']['duration'])}</td>
-					<td class="tar mono">{eval echo date("Y-m-d H:i:s", strtotime($job['lastRun']['stamp']))}</td>
+					<td class="mono">{eval echo sprintf("%.3fs", $job['lastRun']['duration'])}</td>
+					<td class="mono">{eval echo date("Y-m-d H:i:s", strtotime($job['lastRun']['stamp']))}</td>
 					{else}
 					<td colspan="4" class="empty-cell">No run history yet</td>
 					{/if}
@@ -133,8 +133,8 @@ if (document.readyState === 'loading') {
 					<th>Script</th>
 					<th>Status</th>
 					<th>History</th>
-					<th class="tar">Duration</th>
-					<th class="tar">Last run</th>
+					<th>Duration</th>
+					<th>Last run</th>
 				</tr>
 			</thead>
 			<tbody>
@@ -158,8 +158,8 @@ if (document.readyState === 'loading') {
 							<span class="spark-tooltip" hidden="true"></span>
 						</div>
 					</td>
-					<td class="tar mono">{eval echo sprintf("%.3fs", $job['lastRun']['duration'])}</td>
-					<td class="tar mono">{eval echo date("Y-m-d H:i:s", strtotime($job['lastRun']['stamp']))}</td>
+					<td class="mono">{eval echo sprintf("%.3fs", $job['lastRun']['duration'])}</td>
+					<td class="mono">{eval echo date("Y-m-d H:i:s", strtotime($job['lastRun']['stamp']))}</td>
 					{else}
 					<td colspan="4" class="empty-cell">No run history yet</td>
 					{/if}
