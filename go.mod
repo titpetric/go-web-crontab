@@ -9,7 +9,7 @@ require (
 	github.com/namsral/flag v1.7.4-pre
 	github.com/robfig/cron/v3 v3.0.1
 	github.com/titpetric/pdo v0.0.0-20260708190443-d44610ab0476
-	github.com/titpetric/phpscript v0.1.0
+	github.com/titpetric/phpscript v0.1.3
 	github.com/titpetric/platform v0.4.6
 	golang.org/x/net v0.57.0
 	modernc.org/sqlite v1.54.0

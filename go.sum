@@ -122,8 +122,8 @@ github.com/stretchr/testify v1.11.1 h1:7s2iGBzp5EwR7/aIZr8ao5+dra3wiQyKjjFuvgVKu
 github.com/stretchr/testify v1.11.1/go.mod h1:wZwfW3scLgRK+23gO65QZefKpKQRnfz6sD981Nm4B6U=
 github.com/titpetric/pdo v0.0.0-20260708190443-d44610ab0476 h1:58jO0rLHDp0sAJTHxehxZIkw/5qFqLiXiuL4HbPyg/I=
 github.com/titpetric/pdo v0.0.0-20260708190443-d44610ab0476/go.mod h1:UMiNo3UCrHlWA54SMBjnebivjmqEBknAPvpytpFOM0U=
-github.com/titpetric/phpscript v0.1.0 h1:rWXsjn6wahtM4W8KvBf5veTS+zZG82XAWldoHn+hQaQ=
-github.com/titpetric/phpscript v0.1.0/go.mod h1:JZJ+xi+DNqcOAN4ULcUsjVJsmlW3Aaayh7lVHsT1Wo8=
+github.com/titpetric/phpscript v0.1.3 h1:WmAFzBWOhT1jpw+Oi39Hlcm0BWvK9l2Ntxv6Zc/DhX0=
+github.com/titpetric/phpscript v0.1.3/go.mod h1:JZJ+xi+DNqcOAN4ULcUsjVJsmlW3Aaayh7lVHsT1Wo8=
 github.com/titpetric/platform v0.4.6 h1:i/ZQAmogUFHsojMwy6FpKnG/4HAOwHZlYuF+6V9sYao=
 github.com/titpetric/platform v0.4.6/go.mod h1:c8pTuR3IAGrP4JnLnnFzqw7VhHA+FKIaXdJeAwHfm54=
 github.com/tj/assert v0.0.0-20171129193455-018094318fb0/go.mod h1:mZ9/Rh9oLWpLLDRpvE+3b7gP/C2YyLFYxNmcLnPTMe0=
