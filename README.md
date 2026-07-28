@@ -10,6 +10,8 @@ One of the first versions of the front-end just collected the logs of
 any performance or stability information (latency, failure rate,
 timeouts, ...).
 
+## Screenshots
+
 ![](docs/assets/webcron-index.png)
 
 ![](docs/assets/webcron-detail.png)
@@ -36,13 +38,30 @@ volumes:
   webcron-data:
 ```
 
-Start it with Docker Compose:
+To mount your own scripts and crontab schedule files, mount them as:
+
+- `/app/cron.d` - for all the `*.cron` files
+- `/app/cron.scripts` - for all the automation scripts
+
+To package your own automation bundle, you can use the following
+Dockerfile as a template.
+
+```Dockerfile
+FROM titpetric/go-web-crontab:latest
+
+RUN rm -rf /app/cron.d/* /app/cron.scripts/*
+
+COPY ./cron.d /app/cron.d
+COPY ./cron.scripts /app/cron.scripts
+```
+
+Start the service with Docker Compose:
 
 ```bash
 docker compose up -d
 ```
 
-The project can also be installed from source:
+The app can also be installed from source:
 
 ```bash
 CGO_ENABLED=0 go install github.com/titpetric/go-web-crontab/cmd/webcron@latest
@@ -57,12 +76,5 @@ The project uses a few core packages to bind together functionality:
 | [github.com/go-bridget/mig](https://github.com/go-bridget/mig)           | Database migrations, database model code generation                   |
 | [github.com/titpetric/phpscript](https://github.com/titpetric/phpscript) | Front-end phpscript runtime, minimal dashboard layout                 |
 | [github.com/titpetric/pdo](https://github.com/titpetric/pdo)             | A request-lived database connection object, type safe generic methods |
-
-The execution log is stored in a sqlite database as defined with
-`PLATFORM_DB_CRONTAB` environment variable.
-
-```bash
-PLATFORM_DB_CRONTAB=sqlite://webcron.db
-```
 
 Written by [Tit Petric](https://titpetric.com).
