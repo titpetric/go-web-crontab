@@ -13,8 +13,7 @@ type (
 			scriptPath string
 		}
 		web struct {
-			addr     string
-			frontend string
+			addr string
 		}
 	}
 )
@@ -48,5 +47,4 @@ func Flags(prefix ...string) {
 	flag.StringVar(&config.crontab.configPath, p("config-path"), "cron.d/*.cron", "Glob pattern for crontab configs")
 	flag.StringVar(&config.crontab.scriptPath, p("script-path"), "cron.scripts/", "Path to crontab scripts folder")
 	flag.StringVar(&config.web.addr, p("web-addr"), ":8080", "Web dashboard listen address")
-	flag.StringVar(&config.web.frontend, p("web-frontend"), "frontend/", "Path to frontend PHP files")
 }

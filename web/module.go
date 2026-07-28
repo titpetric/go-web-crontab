@@ -4,11 +4,13 @@ import (
 	"context"
 	"fmt"
 	"io"
+	"io/fs"
 	"net/http"
 	"os"
 	"os/exec"
 	"path"
 	"path/filepath"
+	"slices"
 	"strings"
 	"time"
 
@@ -26,38 +28,104 @@ import (
 type Module struct {
 	platform.UnimplementedModule
 
-	root         string
+	root         fs.FS
+	cacheRoot    string
 	scriptPath   string
 	includeCache *runner.IncludeCache
 	exprCache    *runner.ExprCache
 }
 
-// NewModule creates the web dashboard module rooted at the given directory.
+// NewModule creates the web dashboard module from the given filesystem.
 // scriptPath is the directory holding the cron scripts, used by the live "run"
 // terminal endpoint.
-func NewModule(root, scriptPath string) *Module {
+func NewModule(root fs.FS, scriptPath string) (*Module, error) {
 	// Bridge the platform DB env (PLATFORM_DB_CRONTAB) to the phpscript
 	// DatabaseDriver env (DB_DSN_CRONTAB) so PHP can open the same database.
 	if dsn := os.Getenv("PLATFORM_DB_CRONTAB"); dsn != "" && os.Getenv("DB_DSN_CRONTAB") == "" {
 		os.Setenv("DB_DSN_CRONTAB", dsn)
 	}
 
+	cacheRoot, err := os.MkdirTemp("", "webcron-frontend-")
+	if err != nil {
+		return nil, fmt.Errorf("create frontend cache: %w", err)
+	}
+
 	return &Module{
 		UnimplementedModule: *platform.NewUnimplementedModule("web"),
-		root:                root,
+		root:                &writableFS{source: root, root: cacheRoot},
+		cacheRoot:           cacheRoot,
 		scriptPath:          scriptPath,
 		includeCache:        runner.NewIncludeCache(),
 		exprCache:           runner.NewExprCache(),
+	}, nil
+}
+
+type writableFS struct {
+	source fs.FS
+	root   string
+}
+
+func (f *writableFS) clean(name string) (string, error) {
+	if filepath.IsAbs(name) {
+		rel, err := filepath.Rel(f.root, name)
+		if err != nil || rel == ".." || strings.HasPrefix(rel, ".."+string(filepath.Separator)) {
+			return "", fs.ErrInvalid
+		}
+		name = rel
 	}
+	name = path.Clean(filepath.ToSlash(name))
+	if !fs.ValidPath(name) {
+		return "", fs.ErrInvalid
+	}
+	return name, nil
+}
+
+func (f *writableFS) Open(name string) (fs.File, error) {
+	name, err := f.clean(name)
+	if err != nil {
+		return nil, err
+	}
+	file, err := os.DirFS(f.root).Open(name)
+	if err == nil || !os.IsNotExist(err) {
+		return file, err
+	}
+	return f.source.Open(name)
+}
+
+func (f *writableFS) ReadDir(name string) ([]fs.DirEntry, error) {
+	name, err := f.clean(name)
+	if err != nil {
+		return nil, err
+	}
+
+	entries := make(map[string]fs.DirEntry)
+	for _, filesystem := range []fs.FS{f.source, os.DirFS(f.root)} {
+		list, readErr := fs.ReadDir(filesystem, name)
+		if readErr != nil && !os.IsNotExist(readErr) {
+			return nil, readErr
+		}
+		for _, entry := range list {
+			entries[entry.Name()] = entry
+		}
+	}
+
+	result := make([]fs.DirEntry, 0, len(entries))
+	for _, entry := range entries {
+		result = append(result, entry)
+	}
+	slices.SortFunc(result, func(a, b fs.DirEntry) int {
+		return strings.Compare(a.Name(), b.Name())
+	})
+	return result, nil
 }
 
 // Mount registers HTTP routes for the dashboard.
 func (m *Module) Mount(ctx context.Context, r platform.Router) error {
 	phpMux := http.NewServeMux()
-	_, err := route.NewService(os.DirFS(m.root), phpMux, route.WithRuntimeFunc(func(rt *runner.Runtime) {
+	_, err := route.NewService(m.root, phpMux, route.WithRuntimeFunc(func(rt *runner.Runtime) {
 		rt.SetIncludeCache(m.includeCache)
 		rt.SetExprCache(m.exprCache)
-		stdlib.RegisterFS(rt, m.root)
+		stdlib.RegisterFS(rt, m.cacheRoot)
 		stdlib.Register(rt)
 		registerHelpers(rt)
 	}))
@@ -136,9 +204,9 @@ func (m *Module) handleRunWS(ws *websocket.Conn) {
 // handleStatic serves static assets (CSS, JS) from the frontend root.
 func (m *Module) handleStatic(w http.ResponseWriter, r *http.Request) {
 	relPath := strings.TrimPrefix(r.URL.Path, "/assets/")
-	full := filepath.Join(m.root, "assets", filepath.Clean("/"+relPath))
+	full := path.Join("assets", path.Clean("/"+relPath))
 
-	data, err := os.ReadFile(full)
+	data, err := fs.ReadFile(m.root, full)
 	if err != nil {
 		http.NotFound(w, r)
 		return

@@ -1,0 +1,12 @@
+services:
+  webcron:
+    image: titpetric/go-web-crontab:latest
+    environment:
+      PLATFORM_DB_CRONTAB: sqlite://data/webcron.db
+    ports:
+      - "3000:8080"
+    volumes:
+      - webcron-data:/data
+
+volumes:
+  webcron-data:

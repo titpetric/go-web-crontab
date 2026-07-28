@@ -9,6 +9,7 @@ import (
 
 	"github.com/titpetric/platform"
 
+	"github.com/titpetric/go-web-crontab/frontend"
 	"github.com/titpetric/go-web-crontab/schema"
 	"github.com/titpetric/go-web-crontab/storage"
 	"github.com/titpetric/go-web-crontab/web"
@@ -45,7 +46,7 @@ func Start() error {
 	}
 
 	// start web dashboard
-	go startWeb(ctx, config.web.frontend, config.crontab.scriptPath)
+	go startWeb(ctx, config.crontab.scriptPath)
 
 	err = cron.Start()
 	if err != nil {
@@ -61,14 +62,20 @@ func Start() error {
 
 // startWeb launches the platform-based web server for the admin dashboard.
 // It runs in a goroutine and respects the parent context for shutdown.
-func startWeb(ctx context.Context, frontendPath, scriptPath string) {
+func startWeb(ctx context.Context, scriptPath string) {
 	opts := platform.NewOptions()
 	opts.ServerAddr = config.web.addr
 
-	svc := platform.New(opts)
-	svc.Register(web.NewModule(frontendPath, scriptPath))
+	module, err := web.NewModule(frontend.Files, scriptPath)
+	if err != nil {
+		log.Printf("Web dashboard error: %+v", err)
+		return
+	}
 
-	if err := svc.Start(ctx); err != nil {
+	svc := platform.New(opts)
+	svc.Register(module)
+
+	if err = svc.Start(ctx); err != nil {
 		log.Printf("Web dashboard error: %+v", err)
 		return
 	}

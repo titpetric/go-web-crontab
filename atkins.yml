@@ -1,15 +1,19 @@
-tasks:
+vars:
+  name: webcron
+
+jobs:
   default:
-    default: "Run stuff"
+    desc: "Run stuff"
     passthru: true
-    cmds:
+    steps:
       - go fmt ./...
       - go mod tidy
       - goimports -w .
       - go install ./cmd/...
+      - task: go:build
 
   run:
     desc: "Run webcron"
     tty: true
-    cmds:
+    steps:
       - PLATFORM_DB_CRONTAB='sqlite://webcron.db?_time_format=sqlite' webcron

@@ -4,7 +4,7 @@ go 1.27rc1
 
 require (
 	github.com/apex/log v1.9.0
-	github.com/go-bridget/mig v0.4.2
+	github.com/go-bridget/mig v0.4.3
 	github.com/jmoiron/sqlx v1.4.0
 	github.com/namsral/flag v1.7.4-pre
 	github.com/robfig/cron/v3 v3.0.1
