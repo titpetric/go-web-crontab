@@ -1,13 +1,12 @@
 <?php
 
-include("include/Database.php");
-include("include/Template.php");
-include("include/Compiler.php");
+include("vendor/autoload.php");
 
 function route_job_name() {
 	if (isset($_PATH["group"]) && $_PATH["group"] != "") {
 		return $_PATH["group"] . "/" . $_PATH["jobName"];
 	}
+
 	return $_PATH["jobName"];
 }
 
@@ -25,12 +24,13 @@ function history($history) {
 			"value" => isset($run["duration"]) ? $run["duration"] : 0,
 		);
 	}
+
 	return json_encode($retval);
 }
 
-$db = new Database();
-$db->connect("crontab");
+$db = new Database("crontab");
 
-$tpl = new Template();
+$tpl = new MiniTPL\Template;
+
 $tpl->set_paths('templates/');
 $tpl->set_compile_location('cache/', false);

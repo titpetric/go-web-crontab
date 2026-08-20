@@ -18,7 +18,7 @@ import (
 
 	"github.com/titpetric/platform"
 
-	"github.com/titpetric/phpscript/route"
+	"github.com/titpetric/phpscript/annotations"
 	"github.com/titpetric/phpscript/runner"
 	"github.com/titpetric/phpscript/stdlib"
 )
@@ -39,12 +39,6 @@ type Module struct {
 // scriptPath is the directory holding the cron scripts, used by the live "run"
 // terminal endpoint.
 func NewModule(root fs.FS, scriptPath string) (*Module, error) {
-	// Bridge the platform DB env (PLATFORM_DB_CRONTAB) to the phpscript
-	// DatabaseDriver env (DB_DSN_CRONTAB) so PHP can open the same database.
-	if dsn := os.Getenv("PLATFORM_DB_CRONTAB"); dsn != "" && os.Getenv("DB_DSN_CRONTAB") == "" {
-		os.Setenv("DB_DSN_CRONTAB", dsn)
-	}
-
 	cacheRoot, err := os.MkdirTemp("", "webcron-frontend-")
 	if err != nil {
 		return nil, fmt.Errorf("create frontend cache: %w", err)
@@ -121,15 +115,18 @@ func (f *writableFS) ReadDir(name string) ([]fs.DirEntry, error) {
 
 // Mount registers HTTP routes for the dashboard.
 func (m *Module) Mount(ctx context.Context, r platform.Router) error {
+	// The dashboard's PHP endpoints are served from a mux of their own,
+	// behind the catch-all below, so a request that matches no @route falls
+	// through to the platform router rather than 404ing inside PHP.
 	phpMux := http.NewServeMux()
-	_, err := route.NewService(m.root, phpMux, route.WithRuntimeFunc(func(rt *runner.Runtime) {
+	routes := annotations.NewRoute(m.root, annotations.WithRuntimeFunc(func(rt *runner.Runtime) {
 		rt.SetIncludeCache(m.includeCache)
 		rt.SetExprCache(m.exprCache)
 		stdlib.RegisterFS(rt, m.cacheRoot)
 		stdlib.Register(rt)
 		registerHelpers(rt)
 	}))
-	if err != nil {
+	if err := routes.RegisterMux(phpMux); err != nil {
 		return err
 	}
 

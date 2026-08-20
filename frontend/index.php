@@ -10,6 +10,7 @@ if (isset($_PATH["jobName"]) && $_PATH["jobName"] != "") {
 	if (isset($_GET["pageNumber"])) {
 		$pageNumber = (int)$_GET["pageNumber"];
 	}
+
 	if ($pageNumber < 0) {
 		$pageNumber = 0;
 	}
@@ -20,10 +21,12 @@ if (isset($_PATH["jobName"]) && $_PATH["jobName"] != "") {
 		if ($requested == 50) {
 			$pageSize = 50;
 		}
+
 		if ($requested == 100) {
 			$pageSize = 100;
 		}
 	}
+
 	$offset = $pageNumber * $pageSize;
 
 	$total = 0;
@@ -64,6 +67,7 @@ if (isset($_PATH["jobName"]) && $_PATH["jobName"] != "") {
 		} else {
 			$exitCode = '<span class="badge badge-ok">OK</span>';
 		}
+
 		$logs[] = array(
 			"id" => $rowNumber,
 			"link" => $job["link"] . "/" . $rowNumber,
@@ -77,9 +81,24 @@ if (isset($_PATH["jobName"]) && $_PATH["jobName"] != "") {
 	$daily = array(
 		"labels" => array(),
 		"datasets" => array(
-			array("label" => "Minimum duration", "backgroundColor" => "#c7d2fe", "borderRadius" => 4, "data" => array()),
-			array("label" => "Average duration", "backgroundColor" => "#6366f1", "borderRadius" => 4, "data" => array()),
-			array("label" => "Maximum duration", "backgroundColor" => "#3730a3", "borderRadius" => 4, "data" => array()),
+			array(
+				"label" => "Minimum duration",
+				"backgroundColor" => "#c7d2fe",
+				"borderRadius" => 4,
+				"data" => array(),
+			),
+			array(
+				"label" => "Average duration",
+				"backgroundColor" => "#6366f1",
+				"borderRadius" => 4,
+				"data" => array(),
+			),
+			array(
+				"label" => "Maximum duration",
+				"backgroundColor" => "#3730a3",
+				"borderRadius" => 4,
+				"data" => array(),
+			),
 		),
 	);
 	foreach ($dayRows as $row) {
@@ -94,9 +113,24 @@ if (isset($_PATH["jobName"]) && $_PATH["jobName"] != "") {
 	$monthly = array(
 		"labels" => array(),
 		"datasets" => array(
-			array("label" => "Minimum duration", "backgroundColor" => "#c7d2fe", "borderRadius" => 4, "data" => array()),
-			array("label" => "Average duration", "backgroundColor" => "#6366f1", "borderRadius" => 4, "data" => array()),
-			array("label" => "Maximum duration", "backgroundColor" => "#3730a3", "borderRadius" => 4, "data" => array()),
+			array(
+				"label" => "Minimum duration",
+				"backgroundColor" => "#c7d2fe",
+				"borderRadius" => 4,
+				"data" => array(),
+			),
+			array(
+				"label" => "Average duration",
+				"backgroundColor" => "#6366f1",
+				"borderRadius" => 4,
+				"data" => array(),
+			),
+			array(
+				"label" => "Maximum duration",
+				"backgroundColor" => "#3730a3",
+				"borderRadius" => 4,
+				"data" => array(),
+			),
 		),
 	);
 	foreach ($monthRows as $row) {
@@ -109,7 +143,13 @@ if (isset($_PATH["jobName"]) && $_PATH["jobName"] != "") {
 	$title = $jobName;
 
 	$tpl->load("job_stats.tpl");
-	$tpl->assign(array("title" => $title, "daily" => $daily, "monthly" => $monthly, "job" => $job, "logs" => $logs));
+	$tpl->assign(array(
+		"title" => $title,
+		"daily" => $daily,
+		"monthly" => $monthly,
+		"job" => $job,
+		"logs" => $logs,
+	));
 	$tpl->render();
 
 	$db->close();
@@ -155,6 +195,7 @@ foreach ($body["jobs"] as $job) {
 	} else {
 		$summary["scheduled"]++;
 	}
+
 	if (!empty($job["lastRun"])) {
 		if (($job["lastRun"]["exitCode"] + 0) == 0) {
 			$summary["healthy"]++;
@@ -167,7 +208,11 @@ foreach ($body["jobs"] as $job) {
 $title = "webcron dashboard";
 
 $tpl->load("main.tpl");
-$tpl->assign(array("title" => $title, "body" => $body, "summary" => $summary));
+$tpl->assign(array(
+	"title" => $title,
+	"body" => $body,
+	"summary" => $summary,
+));
 $tpl->render();
 
 $db->close();

@@ -22,7 +22,11 @@ $job = array("jobName" => $jobName, "ID" => $ID);
 $title = $jobName . ", log " . $ID;
 
 $tpl->load("job_detail.tpl");
-$tpl->assign(array("title" => $title, "output" => $output, "job" => $job));
+$tpl->assign(array(
+	"title" => $title,
+	"output" => $output,
+	"job" => $job,
+));
 $tpl->render();
 
 $db->close();

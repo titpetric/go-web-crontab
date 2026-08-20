@@ -5,7 +5,7 @@ import (
 	"io/fs"
 )
 
-//go:embed *.php assets/* include/*.php templates/*.tpl
+//go:embed *.php composer.json composer.lock assets/* templates/*.tpl vendor
 var embedded embed.FS
 
 // Files contains the PHP dashboard, templates, and static assets.

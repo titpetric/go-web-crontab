@@ -23,8 +23,13 @@ if (!$job) {
 }
 
 $now = date("Y-m-d H:i:s");
+
 $db->query("UPDATE jobs SET description = ?, updated_at = ? WHERE name = ?", $description, $now, $name);
 
-echo json_encode(array("ok" => true, "name" => $name, "description" => $description));
+echo json_encode(array(
+	"ok" => true,
+	"name" => $name,
+	"description" => $description,
+));
 
 $db->close();

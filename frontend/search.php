@@ -8,6 +8,7 @@ $pageNumber = 0;
 if (isset($_POST["pageNumber"])) {
 	$pageNumber = (int)$_POST["pageNumber"];
 }
+
 $pageSize = 25;
 $offset = $pageNumber * $pageSize;
 
