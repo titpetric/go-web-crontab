@@ -10,7 +10,7 @@ require (
 	github.com/robfig/cron/v3 v3.0.1
 	github.com/titpetric/pdo v0.2.1
 	github.com/titpetric/phpscript v0.3.1
-	github.com/titpetric/platform v0.6.2
+	github.com/titpetric/platform v0.7.0
 	golang.org/x/net v0.58.0
 	modernc.org/sqlite v1.57.0
 )
