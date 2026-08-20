@@ -22,8 +22,8 @@ github.com/fatih/color v1.7.0/go.mod h1:Zm6kSWBoL9eyXnKyktHP6abPY2pDugNf5Kwzbycv
 github.com/fatih/color v1.19.0 h1:Zp3PiM21/9Ld6FzSKyL5c/BULoe/ONr9KlbYVOfG8+w=
 github.com/fatih/color v1.19.0/go.mod h1:zNk67I0ZUT1bEGsSGyCZYZNrHuTkJJB+r6Q9VuMi0LE=
 github.com/fsnotify/fsnotify v1.4.7/go.mod h1:jwhsz4b93w/PPRr/qN1Yymfu8t87LnFCMoQvtojpjFo=
-github.com/go-bridget/mig v0.5.1 h1:kgFxVBfqb7rCEhOBtg3/6MadVmclqQiZNY3n3Vpvjvk=
-github.com/go-bridget/mig v0.5.1/go.mod h1:2FCKqAjPsIliG3aVNAMC2oyZgQXShDPSdJ5uQOjuLMc=
+github.com/go-bridget/mig v0.5.2 h1:u9xvECZs2gsdkZ7jjEGQzZGEB5Gg44her/TOtGPKZFY=
+github.com/go-bridget/mig v0.5.2/go.mod h1:RItxUkyEqXs6gmGYCNow3bCJgsnJb439XVWwdwaohsY=
 github.com/go-chi/chi/v5 v5.3.2 h1:5YQkICvTCSZ25hoRsyJazN0scjzKGiu4VAUc7H1o1nY=
 github.com/go-chi/chi/v5 v5.3.2/go.mod h1:R+tYY2hNuVUUjxoPtqUdgBqevM9s9njzkTLutVsOCto=
 github.com/go-logfmt/logfmt v0.4.0/go.mod h1:3RMwSq7FuexP4Kalkev3ejPJsZTpXXBr9+V4qmtdjCk=
