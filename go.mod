@@ -8,7 +8,7 @@ require (
 	github.com/jmoiron/sqlx v1.4.0
 	github.com/namsral/flag v1.7.4-pre
 	github.com/robfig/cron/v3 v3.0.1
-	github.com/titpetric/pdo v0.2.1
+	github.com/titpetric/pdo v0.2.2
 	github.com/titpetric/phpscript v0.3.2
 	github.com/titpetric/platform v0.7.0
 	golang.org/x/net v0.58.0
