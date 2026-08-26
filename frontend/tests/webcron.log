@@ -1,0 +1,62 @@
+2026/08/26 12:27:46 migrate.go:24: INFO migration file=crontab.up.sql status=ok
+2026/08/26 12:27:46 crontab.go:97: INFO loading config file=testdata/cron.d/test.cron
+2026/08/26 12:27:46 crontab.go:148: INFO loaded job job=api_stats host=api1 schedule="0 0 0 1 1 *" line=testdata/cron.d/test.cron:6
+2026/08/26 12:27:46 crontab.go:54: INFO starting job runners jobs=1
+2026/08/26 12:27:46 registry.go:238: INFO modules started count=1 modules=[web]
+2026/08/26 12:27:46 platform.go:250: INFO server listening addr=127.0.0.1:18080 url=http://127.0.0.1:18080
+2026/08/26 12:27:46 routes.go:41: INFO routes registered routes=21 middlewares=0
+2026/08/26 12:27:46 routes.go:44: INFO route method=GET path=/assets/* handler=github.com/titpetric/go-web-crontab/web.(*Module).handleStatic-fm
+2026/08/26 12:27:46 routes.go:44: INFO route method=QUERY path=/ws/run/* handler=github.com/titpetric/go-web-crontab/web.(*Module).handleRunWS-fm
+2026/08/26 12:27:46 routes.go:44: INFO route method=CONNECT path=/ws/run/* handler=github.com/titpetric/go-web-crontab/web.(*Module).handleRunWS-fm
+2026/08/26 12:27:46 routes.go:44: INFO route method=PATCH path=/ws/run/* handler=github.com/titpetric/go-web-crontab/web.(*Module).handleRunWS-fm
+2026/08/26 12:27:46 routes.go:44: INFO route method=TRACE path=/ws/run/* handler=github.com/titpetric/go-web-crontab/web.(*Module).handleRunWS-fm
+2026/08/26 12:27:46 routes.go:44: INFO route method=GET path=/ws/run/* handler=github.com/titpetric/go-web-crontab/web.(*Module).handleRunWS-fm
+2026/08/26 12:27:46 routes.go:44: INFO route method=OPTIONS path=/ws/run/* handler=github.com/titpetric/go-web-crontab/web.(*Module).handleRunWS-fm
+2026/08/26 12:27:46 routes.go:44: INFO route method=POST path=/ws/run/* handler=github.com/titpetric/go-web-crontab/web.(*Module).handleRunWS-fm
+2026/08/26 12:27:46 routes.go:44: INFO route method=DELETE path=/ws/run/* handler=github.com/titpetric/go-web-crontab/web.(*Module).handleRunWS-fm
+2026/08/26 12:27:46 routes.go:44: INFO route method=HEAD path=/ws/run/* handler=github.com/titpetric/go-web-crontab/web.(*Module).handleRunWS-fm
+2026/08/26 12:27:46 routes.go:44: INFO route method=PUT path=/ws/run/* handler=github.com/titpetric/go-web-crontab/web.(*Module).handleRunWS-fm
+2026/08/26 12:27:46 routes.go:44: INFO route method=GET path=/* handler=github.com/titpetric/go-web-crontab/web.(*Module).Mount.func2
+2026/08/26 12:27:46 routes.go:44: INFO route method=CONNECT path=/* handler=github.com/titpetric/go-web-crontab/web.(*Module).Mount.func2
+2026/08/26 12:27:46 routes.go:44: INFO route method=PATCH path=/* handler=github.com/titpetric/go-web-crontab/web.(*Module).Mount.func2
+2026/08/26 12:27:46 routes.go:44: INFO route method=QUERY path=/* handler=github.com/titpetric/go-web-crontab/web.(*Module).Mount.func2
+2026/08/26 12:27:46 routes.go:44: INFO route method=DELETE path=/* handler=github.com/titpetric/go-web-crontab/web.(*Module).Mount.func2
+2026/08/26 12:27:46 routes.go:44: INFO route method=TRACE path=/* handler=github.com/titpetric/go-web-crontab/web.(*Module).Mount.func2
+2026/08/26 12:27:46 routes.go:44: INFO route method=OPTIONS path=/* handler=github.com/titpetric/go-web-crontab/web.(*Module).Mount.func2
+2026/08/26 12:27:46 routes.go:44: INFO route method=PUT path=/* handler=github.com/titpetric/go-web-crontab/web.(*Module).Mount.func2
+2026/08/26 12:27:46 routes.go:44: INFO route method=POST path=/* handler=github.com/titpetric/go-web-crontab/web.(*Module).Mount.func2
+2026/08/26 12:27:46 routes.go:44: INFO route method=HEAD path=/* handler=github.com/titpetric/go-web-crontab/web.(*Module).Mount.func2
+2026/08/26 12:27:46 start.go:83: INFO web dashboard listening addr=127.0.0.1:18080
+{"Alloc":1622384,"TotalAlloc":51119272,"Sys":18471176,"Mallocs":1210146,"Frees":1194647,"LiveObjects":15499,"PauseTotalNs":3174932,"NumGC":30,"NumGoroutine":11}
+{"Alloc":1627048,"TotalAlloc":51129928,"Sys":18471176,"Mallocs":1210245,"Frees":1194696,"LiveObjects":15549,"PauseTotalNs":3247786,"NumGC":32,"NumGoroutine":11}
+{"Alloc":1627064,"TotalAlloc":51133192,"Sys":18471176,"Mallocs":1210267,"Frees":1194718,"LiveObjects":15549,"PauseTotalNs":3315687,"NumGC":34,"NumGoroutine":11}
+{"Alloc":1627064,"TotalAlloc":51136424,"Sys":18471176,"Mallocs":1210288,"Frees":1194739,"LiveObjects":15549,"PauseTotalNs":3390787,"NumGC":36,"NumGoroutine":11}
+{"Alloc":1627064,"TotalAlloc":51139656,"Sys":18471176,"Mallocs":1210309,"Frees":1194760,"LiveObjects":15549,"PauseTotalNs":3491912,"NumGC":39,"NumGoroutine":11}
+{"Alloc":1627064,"TotalAlloc":51142888,"Sys":18471176,"Mallocs":1210330,"Frees":1194781,"LiveObjects":15549,"PauseTotalNs":3570337,"NumGC":41,"NumGoroutine":11}
+{"Alloc":1627064,"TotalAlloc":51146120,"Sys":18471176,"Mallocs":1210351,"Frees":1194802,"LiveObjects":15549,"PauseTotalNs":3647578,"NumGC":43,"NumGoroutine":11}
+{"Alloc":1627064,"TotalAlloc":51149352,"Sys":18471176,"Mallocs":1210372,"Frees":1194823,"LiveObjects":15549,"PauseTotalNs":3712759,"NumGC":45,"NumGoroutine":11}
+{"Alloc":1627064,"TotalAlloc":51152584,"Sys":18471176,"Mallocs":1210393,"Frees":1194844,"LiveObjects":15549,"PauseTotalNs":3777168,"NumGC":47,"NumGoroutine":11}
+{"Alloc":1627064,"TotalAlloc":51155816,"Sys":18471176,"Mallocs":1210414,"Frees":1194865,"LiveObjects":15549,"PauseTotalNs":4162820,"NumGC":49,"NumGoroutine":11}
+{"Alloc":1627064,"TotalAlloc":51159048,"Sys":18471176,"Mallocs":1210435,"Frees":1194886,"LiveObjects":15549,"PauseTotalNs":5276669,"NumGC":51,"NumGoroutine":11}
+{"Alloc":1627064,"TotalAlloc":51162280,"Sys":18471176,"Mallocs":1210456,"Frees":1194907,"LiveObjects":15549,"PauseTotalNs":5362294,"NumGC":53,"NumGoroutine":11}
+{"Alloc":1627064,"TotalAlloc":51165512,"Sys":18471176,"Mallocs":1210477,"Frees":1194928,"LiveObjects":15549,"PauseTotalNs":5430851,"NumGC":55,"NumGoroutine":11}
+{"Alloc":1627064,"TotalAlloc":51168744,"Sys":18471176,"Mallocs":1210498,"Frees":1194949,"LiveObjects":15549,"PauseTotalNs":5500622,"NumGC":57,"NumGoroutine":11}
+{"Alloc":1627064,"TotalAlloc":51171976,"Sys":18471176,"Mallocs":1210519,"Frees":1194970,"LiveObjects":15549,"PauseTotalNs":5563971,"NumGC":59,"NumGoroutine":11}
+{"Alloc":1627064,"TotalAlloc":51175208,"Sys":18471176,"Mallocs":1210540,"Frees":1194991,"LiveObjects":15549,"PauseTotalNs":5628604,"NumGC":61,"NumGoroutine":11}
+{"Alloc":1627064,"TotalAlloc":51178440,"Sys":18471176,"Mallocs":1210561,"Frees":1195012,"LiveObjects":15549,"PauseTotalNs":5926260,"NumGC":63,"NumGoroutine":11}
+{"Alloc":1627064,"TotalAlloc":51181672,"Sys":18471176,"Mallocs":1210582,"Frees":1195033,"LiveObjects":15549,"PauseTotalNs":6083152,"NumGC":65,"NumGoroutine":11}
+{"Alloc":1627064,"TotalAlloc":51184904,"Sys":18471176,"Mallocs":1210603,"Frees":1195054,"LiveObjects":15549,"PauseTotalNs":6167395,"NumGC":67,"NumGoroutine":11}
+{"Alloc":1627064,"TotalAlloc":51188136,"Sys":18471176,"Mallocs":1210624,"Frees":1195075,"LiveObjects":15549,"PauseTotalNs":6250204,"NumGC":69,"NumGoroutine":11}
+{"Alloc":1627064,"TotalAlloc":51191368,"Sys":18471176,"Mallocs":1210645,"Frees":1195096,"LiveObjects":15549,"PauseTotalNs":6328672,"NumGC":71,"NumGoroutine":11}
+{"Alloc":1627064,"TotalAlloc":51194600,"Sys":18471176,"Mallocs":1210666,"Frees":1195117,"LiveObjects":15549,"PauseTotalNs":6408507,"NumGC":73,"NumGoroutine":11}
+{"Alloc":1627064,"TotalAlloc":51197832,"Sys":18471176,"Mallocs":1210687,"Frees":1195138,"LiveObjects":15549,"PauseTotalNs":6482617,"NumGC":75,"NumGoroutine":11}
+{"Alloc":1627064,"TotalAlloc":51201064,"Sys":18471176,"Mallocs":1210708,"Frees":1195159,"LiveObjects":15549,"PauseTotalNs":6552620,"NumGC":77,"NumGoroutine":11}
+{"Alloc":1627064,"TotalAlloc":51204296,"Sys":18471176,"Mallocs":1210729,"Frees":1195180,"LiveObjects":15549,"PauseTotalNs":6615356,"NumGC":79,"NumGoroutine":11}
+{"Alloc":1627064,"TotalAlloc":51207528,"Sys":18471176,"Mallocs":1210750,"Frees":1195201,"LiveObjects":15549,"PauseTotalNs":6675165,"NumGC":81,"NumGoroutine":11}
+{"Alloc":1627064,"TotalAlloc":51210760,"Sys":18471176,"Mallocs":1210771,"Frees":1195222,"LiveObjects":15549,"PauseTotalNs":6752020,"NumGC":83,"NumGoroutine":11}
+{"Alloc":1627064,"TotalAlloc":51213992,"Sys":18471176,"Mallocs":1210792,"Frees":1195243,"LiveObjects":15549,"PauseTotalNs":6818864,"NumGC":85,"NumGoroutine":11}
+{"Alloc":1627064,"TotalAlloc":51217224,"Sys":18471176,"Mallocs":1210813,"Frees":1195264,"LiveObjects":15549,"PauseTotalNs":6889812,"NumGC":87,"NumGoroutine":11}
+{"Alloc":1627064,"TotalAlloc":51220456,"Sys":18471176,"Mallocs":1210834,"Frees":1195285,"LiveObjects":15549,"PauseTotalNs":6952609,"NumGC":89,"NumGoroutine":11}
+{"Alloc":1627064,"TotalAlloc":51223688,"Sys":18471176,"Mallocs":1210855,"Frees":1195306,"LiveObjects":15549,"PauseTotalNs":7286259,"NumGC":91,"NumGoroutine":11}
+{"Alloc":1627064,"TotalAlloc":51226920,"Sys":18471176,"Mallocs":1210876,"Frees":1195327,"LiveObjects":15549,"PauseTotalNs":7354171,"NumGC":93,"NumGoroutine":11}
+{"Alloc":1627064,"TotalAlloc":51230152,"Sys":18471176,"Mallocs":1210897,"Frees":1195348,"LiveObjects":15549,"PauseTotalNs":7423791,"NumGC":95,"NumGoroutine":11}

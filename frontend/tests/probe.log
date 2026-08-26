@@ -1,0 +1,32 @@
+2026/08/26 12:20:04 migrate.go:24: INFO migration file=crontab.up.sql status=ok
+2026/08/26 12:20:04 crontab.go:97: INFO loading config file=testdata/cron.d/test.cron
+2026/08/26 12:20:04 crontab.go:148: INFO loaded job job=api_stats host=api1 schedule="0 0 0 1 1 *" line=testdata/cron.d/test.cron:6
+2026/08/26 12:20:04 crontab.go:54: INFO starting job runners jobs=1
+2026/08/26 12:20:04 registry.go:238: INFO modules started count=1 modules=[web]
+2026/08/26 12:20:04 platform.go:250: INFO server listening addr=127.0.0.1:18080 url=http://127.0.0.1:18080
+2026/08/26 12:20:04 routes.go:41: INFO routes registered routes=21 middlewares=0
+2026/08/26 12:20:04 routes.go:44: INFO route method=GET path=/assets/* handler=github.com/titpetric/go-web-crontab/web.(*Module).handleStatic-fm
+2026/08/26 12:20:04 routes.go:44: INFO route method=TRACE path=/ws/run/* handler=github.com/titpetric/go-web-crontab/web.(*Module).handleRunWS-fm
+2026/08/26 12:20:04 routes.go:44: INFO route method=HEAD path=/ws/run/* handler=github.com/titpetric/go-web-crontab/web.(*Module).handleRunWS-fm
+2026/08/26 12:20:04 routes.go:44: INFO route method=CONNECT path=/ws/run/* handler=github.com/titpetric/go-web-crontab/web.(*Module).handleRunWS-fm
+2026/08/26 12:20:04 routes.go:44: INFO route method=OPTIONS path=/ws/run/* handler=github.com/titpetric/go-web-crontab/web.(*Module).handleRunWS-fm
+2026/08/26 12:20:04 routes.go:44: INFO route method=QUERY path=/ws/run/* handler=github.com/titpetric/go-web-crontab/web.(*Module).handleRunWS-fm
+2026/08/26 12:20:04 routes.go:44: INFO route method=PUT path=/ws/run/* handler=github.com/titpetric/go-web-crontab/web.(*Module).handleRunWS-fm
+2026/08/26 12:20:04 routes.go:44: INFO route method=DELETE path=/ws/run/* handler=github.com/titpetric/go-web-crontab/web.(*Module).handleRunWS-fm
+2026/08/26 12:20:04 routes.go:44: INFO route method=POST path=/ws/run/* handler=github.com/titpetric/go-web-crontab/web.(*Module).handleRunWS-fm
+2026/08/26 12:20:04 routes.go:44: INFO route method=PATCH path=/ws/run/* handler=github.com/titpetric/go-web-crontab/web.(*Module).handleRunWS-fm
+2026/08/26 12:20:04 routes.go:44: INFO route method=GET path=/ws/run/* handler=github.com/titpetric/go-web-crontab/web.(*Module).handleRunWS-fm
+2026/08/26 12:20:04 routes.go:44: INFO route method=OPTIONS path=/* handler=github.com/titpetric/go-web-crontab/web.(*Module).Mount.func2
+2026/08/26 12:20:04 routes.go:44: INFO route method=HEAD path=/* handler=github.com/titpetric/go-web-crontab/web.(*Module).Mount.func2
+2026/08/26 12:20:04 routes.go:44: INFO route method=PUT path=/* handler=github.com/titpetric/go-web-crontab/web.(*Module).Mount.func2
+2026/08/26 12:20:04 routes.go:44: INFO route method=CONNECT path=/* handler=github.com/titpetric/go-web-crontab/web.(*Module).Mount.func2
+2026/08/26 12:20:04 routes.go:44: INFO route method=POST path=/* handler=github.com/titpetric/go-web-crontab/web.(*Module).Mount.func2
+2026/08/26 12:20:04 routes.go:44: INFO route method=PATCH path=/* handler=github.com/titpetric/go-web-crontab/web.(*Module).Mount.func2
+2026/08/26 12:20:04 routes.go:44: INFO route method=DELETE path=/* handler=github.com/titpetric/go-web-crontab/web.(*Module).Mount.func2
+2026/08/26 12:20:04 routes.go:44: INFO route method=QUERY path=/* handler=github.com/titpetric/go-web-crontab/web.(*Module).Mount.func2
+2026/08/26 12:20:04 routes.go:44: INFO route method=TRACE path=/* handler=github.com/titpetric/go-web-crontab/web.(*Module).Mount.func2
+2026/08/26 12:20:04 routes.go:44: INFO route method=GET path=/* handler=github.com/titpetric/go-web-crontab/web.(*Module).Mount.func2
+2026/08/26 12:20:04 start.go:83: INFO web dashboard listening addr=127.0.0.1:18080
+2026/08/26 12:20:09 handler.go:86: Error in request /, index.php: eval "__call(v_tpl, \"render\")": error including templates/cache/main.tpl: include "templates/cache/main.tpl": load "templates/cache/main.tpl": open templates/cache/main.tpl: file does not exist (1:1)
+ | __call(v_tpl, "render")
+ | ^ [trace ]

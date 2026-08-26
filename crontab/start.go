@@ -3,7 +3,7 @@ package crontab
 import (
 	"context"
 	"fmt"
-	"log"
+	"log/slog"
 	"os"
 	"os/signal"
 
@@ -17,7 +17,7 @@ import (
 
 // Start validates configuration, launches the cron runners and web dashboard,
 // and blocks until an interrupt signal is received.
-func Start() error {
+func Start(logger *slog.Logger) error {
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt)
 	defer stop()
 
@@ -30,12 +30,12 @@ func Start() error {
 	if err != nil {
 		return err
 	}
-	if err := storage.Migrate(ctx, handle, schema.Migrations()); err != nil {
+	if err := storage.Migrate(ctx, logger, handle, schema.Migrations()); err != nil {
 		return fmt.Errorf("Error applying Crontab migrations: %w", err)
 	}
 
 	// crontab package
-	cron, err := NewCrontab(handle)
+	cron, err := NewCrontab(logger, handle)
 	if err != nil {
 		return fmt.Errorf("Error creating Crontab object: %w", err)
 	}
@@ -46,7 +46,7 @@ func Start() error {
 	}
 
 	// start web dashboard
-	go startWeb(ctx, config.crontab.scriptPath)
+	go startWeb(ctx, logger, config.crontab.scriptPath)
 
 	err = cron.Start()
 	if err != nil {
@@ -62,13 +62,13 @@ func Start() error {
 
 // startWeb launches the platform-based web server for the admin dashboard.
 // It runs in a goroutine and respects the parent context for shutdown.
-func startWeb(ctx context.Context, scriptPath string) {
+func startWeb(ctx context.Context, logger *slog.Logger, scriptPath string) {
 	opts := platform.NewOptions()
 	opts.ServerAddr = config.web.addr
 
 	module, err := web.NewModule(frontend.Files, scriptPath)
 	if err != nil {
-		log.Printf("Web dashboard error: %+v", err)
+		logger.Error("web dashboard", "error", err)
 		return
 	}
 
@@ -76,10 +76,10 @@ func startWeb(ctx context.Context, scriptPath string) {
 	svc.Register(module)
 
 	if err = svc.Start(ctx); err != nil {
-		log.Printf("Web dashboard error: %+v", err)
+		logger.Error("web dashboard", "error", err)
 		return
 	}
 
-	log.Printf("Web dashboard listening on %s", config.web.addr)
+	logger.Info("web dashboard listening", "addr", config.web.addr)
 	svc.Wait()
 }

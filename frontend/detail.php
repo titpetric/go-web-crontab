@@ -12,9 +12,19 @@ $row = $db->get("SELECT output FROM (SELECT ROW_NUMBER() OVER (ORDER BY stamp DE
 
 $output = "";
 if ($row) {
-	$output = json_decode($row["output"]);
-	if (!$output) {
-		$output = $row["output"];
+	$output = $row["output"];
+
+	// A job that logged structured output gets the per-line rendering, and one
+	// that logged plain text is shown as the text it is. The shape is checked
+	// before decoding rather than after: json_decode raises on input that is
+	// not json, so calling it on a plain log line would fail the request
+	// instead of returning the null the fallback is written for.
+	$head = substr(ltrim($output), 0, 1);
+	if ($head == "[" || $head == "{") {
+		$decoded = json_decode($output);
+		if ($decoded) {
+			$output = $decoded;
+		}
 	}
 }
 

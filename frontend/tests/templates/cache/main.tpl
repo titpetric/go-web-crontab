@@ -1,4 +1,5 @@
-{load html_header.tpl}
+<?php $_v=&$this->vars; $this->push();$this->load("html_header.tpl");$this->assign($_v);$this->render();$this->pop();?>
+
 
 <script src="/assets/sparkline.js"></script>
 <script>
@@ -51,22 +52,27 @@ if (document.readyState === 'loading') {
 	<div class="stat-grid">
 		<div class="stat-card">
 			<div class="stat-label">Total jobs</div>
-			<div class="stat-value">{summary.total}</div>
+			<div class="stat-value"><?php echo htmlspecialchars($_v['summary']['total'], ENT_QUOTES);?>
+</div>
 			<div class="stat-hint">tracked in crontab</div>
 		</div>
 		<div class="stat-card">
 			<div class="stat-label">Scheduled</div>
-			<div class="stat-value">{summary.scheduled}</div>
-			<div class="stat-hint">{summary.onetime} one-time</div>
+			<div class="stat-value"><?php echo htmlspecialchars($_v['summary']['scheduled'], ENT_QUOTES);?>
+</div>
+			<div class="stat-hint"><?php echo htmlspecialchars($_v['summary']['onetime'], ENT_QUOTES);?>
+ one-time</div>
 		</div>
 		<div class="stat-card is-ok">
 			<div class="stat-label">Healthy</div>
-			<div class="stat-value">{summary.healthy}</div>
+			<div class="stat-value"><?php echo htmlspecialchars($_v['summary']['healthy'], ENT_QUOTES);?>
+</div>
 			<div class="stat-hint">last run exit 0</div>
 		</div>
 		<div class="stat-card is-fail">
 			<div class="stat-label">Failing</div>
-			<div class="stat-value">{summary.failing}</div>
+			<div class="stat-value"><?php echo htmlspecialchars($_v['summary']['failing'], ENT_QUOTES);?>
+</div>
 			<div class="stat-hint">last run non-zero</div>
 		</div>
 	</div>
@@ -87,36 +93,54 @@ if (document.readyState === 'loading') {
 				</tr>
 			</thead>
 			<tbody>
-			{foreach $body['jobs'] as $k => $job}
-				{if $job['active'] == 1 && strpos($job['name'], "onetime/") !== false}
+			<?php if(!empty($_v['body']['jobs']))foreach($_v['body']['jobs'] as $_v['k'] => $_v['job']){?>
+				<?php if($_v['job']['active'] == 1 && strpos($_v['job']['name'], "onetime/") !== false){?>
+
 				<tr>
 					<td class="job-name">
 						<div class="job-name__row">
-							<a href="/{$job['name']}"><code>{$job['name']}</code></a>
-							<button class="icon-btn" type="button" title="Edit description" data-name="{$job['name']}" data-desc="{$job['description']}" onclick="openDescModal(this)" aria-label="Edit description">
+							<a href="/<?php echo htmlspecialchars($_v['job']['name'], ENT_QUOTES);?>
+"><code><?php echo htmlspecialchars($_v['job']['name'], ENT_QUOTES);?>
+</code></a>
+							<button class="icon-btn" type="button" title="Edit description" data-name="<?php echo htmlspecialchars($_v['job']['name'], ENT_QUOTES);?>
+" data-desc="<?php echo htmlspecialchars($_v['job']['description'], ENT_QUOTES);?>
+" onclick="openDescModal(this)" aria-label="Edit description">
 								<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"></path><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"></path></svg>
 							</button>
 						</div>
-						{if !empty($job['description'])}<div class="job-desc">{$job['description']}</div>{/if}
+						<?php if(!empty($_v['job']['description'])){?>
+<div class="job-desc"><?php echo htmlspecialchars($_v['job']['description'], ENT_QUOTES);?>
+</div><?php }?>
 					</td>
-					{if !empty($job['lastRun'])}
-					<td>{if $job['lastRun']['exitCode'] == 0}<span class="badge badge-ok">OK</span>{else}<span class="badge badge-fail">Exit: {$job['lastRun']['exitCode']}</span>{/if}</td>
+					<?php if(!empty($_v['job']['lastRun'])){?>
+
+					<td><?php if($_v['job']['lastRun']['exitCode'] == 0){?>
+<span class="badge badge-ok">OK</span><?php }else{?>
+<span class="badge badge-fail">Exit: <?php echo htmlspecialchars($_v['job']['lastRun']['exitCode'], ENT_QUOTES);?>
+</span><?php }?></td>
 					<td>
 						<div class="sparkline-box">
-							<svg class="sparkline" width="240" height="28" stroke-width="2" {if $job['lastRun']['exitCode'] == 0}stroke="#16a34a" fill="rgba(22,163,74,0.12)"{else}stroke="#dc2626" fill="rgba(220,38,38,0.12)"{/if} data-history='{$job['history']|history}'></svg>
+							<svg class="sparkline" width="240" height="28" stroke-width="2" <?php if($_v['job']['lastRun']['exitCode'] == 0){?>
+stroke="#16a34a" fill="rgba(22,163,74,0.12)"<?php }else{?>
+stroke="#dc2626" fill="rgba(220,38,38,0.12)"<?php }?> data-history='<?php echo htmlspecialchars(history($_v['job']['history']), ENT_QUOTES);?>
+'></svg>
 							<span class="spark-tooltip" hidden="true"></span>
 						</div>
 					</td>
-					<td class="mono">{eval echo sprintf("%.3fs", $job['lastRun']['duration'])}</td>
-					<td class="mono">{eval echo date("Y-m-d H:i:s", strtotime($job['lastRun']['stamp']))}</td>
-					{else}
+					<td class="mono"><?php echo sprintf("%.3fs", $_v['job']['lastRun']['duration']);?>
+</td>
+					<td class="mono"><?php echo date("Y-m-d H:i:s", strtotime($_v['job']['lastRun']['stamp']));?>
+</td>
+					<?php }else{?>
+
 					<td colspan="4" class="empty-cell">No run history yet</td>
-					{/if}
+					<?php }?>
 				</tr>
-				{/if}
-			{else}
+				<?php }?>
+			<?php }else{?>
+
 				<tr><td colspan="5" class="empty-cell">No jobs found.</td></tr>
-			{/foreach}
+			<?php }?>
 			</tbody>
 			</table>
 		</div>
@@ -138,36 +162,54 @@ if (document.readyState === 'loading') {
 				</tr>
 			</thead>
 			<tbody>
-			{foreach $body['jobs'] as $k => $job}
-				{if $job['active'] == 1 && strpos($job['name'], "onetime/") === false}
+			<?php if(!empty($_v['body']['jobs']))foreach($_v['body']['jobs'] as $_v['k'] => $_v['job']){?>
+				<?php if($_v['job']['active'] == 1 && strpos($_v['job']['name'], "onetime/") === false){?>
+
 				<tr>
 					<td class="job-name">
 						<div class="job-name__row">
-							<a href="/{$job['name']}"><code>{$job['name']}</code></a>
-							<button class="icon-btn" type="button" title="Edit description" data-name="{$job['name']}" data-desc="{$job['description']}" onclick="openDescModal(this)" aria-label="Edit description">
+							<a href="/<?php echo htmlspecialchars($_v['job']['name'], ENT_QUOTES);?>
+"><code><?php echo htmlspecialchars($_v['job']['name'], ENT_QUOTES);?>
+</code></a>
+							<button class="icon-btn" type="button" title="Edit description" data-name="<?php echo htmlspecialchars($_v['job']['name'], ENT_QUOTES);?>
+" data-desc="<?php echo htmlspecialchars($_v['job']['description'], ENT_QUOTES);?>
+" onclick="openDescModal(this)" aria-label="Edit description">
 								<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"></path><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"></path></svg>
 							</button>
 						</div>
-						{if !empty($job['description'])}<div class="job-desc">{$job['description']}</div>{/if}
+						<?php if(!empty($_v['job']['description'])){?>
+<div class="job-desc"><?php echo htmlspecialchars($_v['job']['description'], ENT_QUOTES);?>
+</div><?php }?>
 					</td>
-					{if !empty($job['lastRun'])}
-					<td>{if $job['lastRun']['exitCode'] == 0}<span class="badge badge-ok">OK</span>{else}<span class="badge badge-fail">Exit: {$job['lastRun']['exitCode']}</span>{/if}</td>
+					<?php if(!empty($_v['job']['lastRun'])){?>
+
+					<td><?php if($_v['job']['lastRun']['exitCode'] == 0){?>
+<span class="badge badge-ok">OK</span><?php }else{?>
+<span class="badge badge-fail">Exit: <?php echo htmlspecialchars($_v['job']['lastRun']['exitCode'], ENT_QUOTES);?>
+</span><?php }?></td>
 					<td>
 						<div class="sparkline-box">
-							<svg class="sparkline" width="240" height="28" stroke-width="2" {if $job['lastRun']['exitCode'] == 0}stroke="#16a34a" fill="rgba(22,163,74,0.12)"{else}stroke="#dc2626" fill="rgba(220,38,38,0.12)"{/if} data-history='{$job['history']|history}'></svg>
+							<svg class="sparkline" width="240" height="28" stroke-width="2" <?php if($_v['job']['lastRun']['exitCode'] == 0){?>
+stroke="#16a34a" fill="rgba(22,163,74,0.12)"<?php }else{?>
+stroke="#dc2626" fill="rgba(220,38,38,0.12)"<?php }?> data-history='<?php echo htmlspecialchars(history($_v['job']['history']), ENT_QUOTES);?>
+'></svg>
 							<span class="spark-tooltip" hidden="true"></span>
 						</div>
 					</td>
-					<td class="mono">{eval echo sprintf("%.3fs", $job['lastRun']['duration'])}</td>
-					<td class="mono">{eval echo date("Y-m-d H:i:s", strtotime($job['lastRun']['stamp']))}</td>
-					{else}
+					<td class="mono"><?php echo sprintf("%.3fs", $_v['job']['lastRun']['duration']);?>
+</td>
+					<td class="mono"><?php echo date("Y-m-d H:i:s", strtotime($_v['job']['lastRun']['stamp']));?>
+</td>
+					<?php }else{?>
+
 					<td colspan="4" class="empty-cell">No run history yet</td>
-					{/if}
+					<?php }?>
 				</tr>
-				{/if}
-			{else}
+				<?php }?>
+			<?php }else{?>
+
 				<tr><td colspan="5" class="empty-cell">No jobs found.</td></tr>
-			{/foreach}
+			<?php }?>
 			</tbody>
 			</table>
 		</div>
@@ -236,4 +278,5 @@ document.addEventListener('keydown', function (event) {
 });
 </script>
 
-{load html_footer.tpl}
+<?php $this->push();$this->load("html_footer.tpl");$this->assign($_v);$this->render();$this->pop();?>
+

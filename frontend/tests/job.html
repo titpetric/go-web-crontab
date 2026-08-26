@@ -1,20 +1,47 @@
-{load html_header.tpl}
+<!doctype html>
+<html lang="en">
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<meta name="robots" content="noindex">
+	<link rel="preconnect" href="https://fonts.googleapis.com">
+	<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+	<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+	<link href="/assets/style.css" rel="stylesheet">
+	<title>esc&quot;job&lt;i&gt;</title>
+</head>
+<body>
+	<nav class="app-navbar">
+		<div class="app-navbar__inner">
+			<a class="app-brand" href="/">
+				<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+					<circle cx="12" cy="12" r="9"></circle>
+					<path d="M12 7v5l3 2"></path>
+				</svg>
+				<span>webcron<small>&nbsp;&nbsp;job monitor</small></span>
+			</a>
+			<div class="app-nav-links">
+				<a href="/">Dashboard</a>
+			</div>
+		</div>
+	</nav>
+
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xterm/xterm@5.5.0/css/xterm.min.css">
 <script src="https://cdn.jsdelivr.net/npm/@xterm/xterm@5.5.0/lib/xterm.min.js"></script>
 
-<div class="container" id="jobPage" data-jobname="{$job['jobName']}" data-joblink="{job.link}" data-pagesize="{job.pageSize}" data-pagenumber="{job.pageNumber}">
+<div class="container" id="jobPage" data-jobname="esc&quot;job&lt;i&gt;" data-joblink="/esc&quot;job&lt;i&gt;" data-pagesize="20" data-pagenumber="0">
 
 	<div class="page-head">
 		<div>
 			<div class="job-name__row">
-				<h2>{title}</h2>
+				<h2>esc&quot;job&lt;i&gt;</h2>
 				<button class="icon-btn" type="button" title="Edit description" onclick="openDescModal()" aria-label="Edit description">
 					<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"></path><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"></path></svg>
 				</button>
 			</div>
-			<div class="subtitle" id="jobDescription" data-desc="{$job['description']}">{if !empty($job['description'])}{$job['description']}{else}Run duration trends and log history{/if}</div>
+			<div class="subtitle" id="jobDescription" data-desc="desc a&quot;b&lt;i&gt;">desc a&quot;b&lt;i&gt;</div>
 		</div>
 		<div class="page-actions">
 			<a class="btn btn-secondary" href="/">Dashboard</a>
@@ -68,34 +95,42 @@
 				</tr>
 			</thead>
 			<tbody id="logresults">
-			{foreach $logs as $log}
-				<tr>
-					<td><a href="{log.link}">{log.id}</a></td>
-					<td>{if $log['exitCode'] == 0}<span class="badge badge-ok">OK</span>{else}<span class="badge badge-fail">Exit: {log.exitCode}</span>{/if}</td>
-					<td class="tar mono">{log.duration}</td>
-					<td class="tar mono">{log.date}</td>
+							<tr>
+					<td><a href="/esc&quot;job&lt;i&gt;/1">1</a></td>
+					<td><span class="badge badge-fail">Exit: 123</span></td>
+					<td class="tar mono">1.500s</td>
+					<td class="tar mono">1970/01/01 01:00</td>
 				</tr>
-			{else}
-				<tr><td colspan="4" class="empty-cell">No logs available.</td></tr>
-			{/foreach}
-			</tbody>
+							<tr>
+					<td><a href="/esc&quot;job&lt;i&gt;/2">2</a></td>
+					<td><span class="badge badge-ok">OK</span></td>
+					<td class="tar mono">2.500s</td>
+					<td class="tar mono">1970/01/01 01:00</td>
+				</tr>
+							<tr>
+					<td><a href="/esc&quot;job&lt;i&gt;/3">3</a></td>
+					<td><span class="badge badge-ok">OK</span></td>
+					<td class="tar mono">3.500s</td>
+					<td class="tar mono">1970/01/01 01:00</td>
+				</tr>
+						</tbody>
 			</table>
 		</div>
 		<div class="pager">
 			<div class="pager__info">
-				<span id="pagerInfo">{if $job['total'] > 0}Showing {job.firstRow}&ndash;{job.lastRow} of {job.total}{else}No runs recorded{/if}</span>
+				<span id="pagerInfo">Showing 1&ndash;3 of 3</span>
 				<label class="pager__size">
 					Per page
 					<select id="pageSizeSelect" class="form-control" onchange="changePageSize(this.value)">
-						<option value="20" {if $job['pageSize'] == 20}selected{/if}>20</option>
-						<option value="50" {if $job['pageSize'] == 50}selected{/if}>50</option>
-						<option value="100" {if $job['pageSize'] == 100}selected{/if}>100</option>
+						<option value="20" selected>20</option>
+						<option value="50" >50</option>
+						<option value="100" >100</option>
 					</select>
 				</label>
 			</div>
 			<div class="page-actions">
-				<a id="linkPrevious" class="btn btn-secondary {if !$job['hasPrev']}is-disabled{/if}" href="{job.link}?pageNumber={$job['pageNumber']-1}&pageSize={job.pageSize}" {if !$job['hasPrev']}onclick="return false;"{/if}>&larr; Previous</a>
-				<a id="linkNext" class="btn btn-secondary {if !$job['hasNext']}is-disabled{/if}" href="{job.link}?pageNumber={$job['pageNumber']+1}&pageSize={job.pageSize}" {if !$job['hasNext']}onclick="return false;"{/if}>Next &rarr;</a>
+				<a id="linkPrevious" class="btn btn-secondary is-disabled" href="/esc&quot;job&lt;i&gt;?pageNumber=-1&pageSize=20" onclick="return false;">&larr; Previous</a>
+				<a id="linkNext" class="btn btn-secondary is-disabled" href="/esc&quot;job&lt;i&gt;?pageNumber=1&pageSize=20" onclick="return false;">Next &rarr;</a>
 			</div>
 		</div>
 	</section>
@@ -104,7 +139,7 @@
 <div id="termModal" class="modal-overlay" hidden>
 	<div class="modal modal--wide">
 		<div class="modal__head">
-			<span>Run <code>{$job['jobName']}</code></span>
+			<span>Run <code>esc&quot;job&lt;i&gt;</code></span>
 			<button class="icon-btn" type="button" onclick="closeTerm()" aria-label="Close">&times;</button>
 		</div>
 		<div class="modal__body">
@@ -147,13 +182,13 @@ var barOptions = {
 
 new Chart(document.getElementById('chart-daily').getContext('2d'), {
 	type: 'bar',
-	data: {daily|json_encode},
+	data: {"labels":["12:00"],"datasets":[{"label":"Minimum duration","backgroundColor":"#c7d2fe","borderRadius":4,"data":[1.5]},{"label":"Average duration","backgroundColor":"#6366f1","borderRadius":4,"data":[2.5]},{"label":"Maximum duration","backgroundColor":"#3730a3","borderRadius":4,"data":[3.5]}]},
 	options: barOptions
 });
 
 new Chart(document.getElementById('chart-monthly').getContext('2d'), {
 	type: 'bar',
-	data: {monthly|json_encode},
+	data: {"labels":["2026-08-26"],"datasets":[{"label":"Minimum duration","backgroundColor":"#c7d2fe","borderRadius":4,"data":[1.5]},{"label":"Average duration","backgroundColor":"#6366f1","borderRadius":4,"data":[2.5]},{"label":"Maximum duration","backgroundColor":"#3730a3","borderRadius":4,"data":[3.5]}]},
 	options: barOptions
 });
 </script>
@@ -333,4 +368,10 @@ function reload() {
 }
 </script>
 
-{load html_footer.tpl}
+	<footer class="app-footer">
+		webcron &middot; a crontab-like executor with an API &middot;
+		<a href="https://titpetric.com" rel="noopener">Tit Petric</a>
+	</footer>
+</body>
+</html>
+

@@ -1,0 +1,6 @@
+/webcron
+/webcron.pid
+venom*.log
+*.db
+*.db-wal
+*.db-shm

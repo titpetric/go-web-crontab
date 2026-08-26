@@ -4,7 +4,7 @@
 
 	<div class="page-head">
 		<div>
-			<h2>{title|escape}</h2>
+			<h2>{title}</h2>
 			<div class="subtitle">Captured job output</div>
 		</div>
 		<div class="page-actions">
@@ -20,10 +20,10 @@
 		<div class="panel__body--pad">
 			<div class="log-output">
 {if is_array($output)}
-{foreach $output as $line}<div title="{line.timestamp}" class="output-line {line.level} {line.fields.output}">{line.message|escape}</div>
+{foreach $output as $line}<div title="{line.timestamp}" class="output-line {line.level} {line.fields.output}">{line.message}</div>
 {else}<div class="empty-cell">No output recorded.</div>
 {/foreach}
-{else}<div class="output-line">{output|escape}</div>
+{else}<div class="output-line">{output}</div>
 {/if}
 			</div>
 		</div>

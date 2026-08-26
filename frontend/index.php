@@ -61,17 +61,11 @@ if (isset($_PATH["jobName"]) && $_PATH["jobName"] != "") {
 	$rowNumber = $offset;
 	foreach ($rows as $log) {
 		$rowNumber++;
-		$exitCode = $log["exitCode"] + 0;
-		if ($exitCode != 0) {
-			$exitCode = '<span class="badge badge-fail">Exit: ' . $exitCode . '</span>';
-		} else {
-			$exitCode = '<span class="badge badge-ok">OK</span>';
-		}
 
 		$logs[] = array(
 			"id" => $rowNumber,
 			"link" => $job["link"] . "/" . $rowNumber,
-			"exitCode" => $exitCode,
+			"exitCode" => $log["exitCode"] + 0,
 			"duration" => format_duration($log["duration"]),
 			"date" => date("Y/m/d H:i", strtotime($log["stamp"])),
 		);

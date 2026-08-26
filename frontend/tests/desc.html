@@ -1,4 +1,31 @@
-{load html_header.tpl}
+<!doctype html>
+<html lang="en">
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<meta name="robots" content="noindex">
+	<link rel="preconnect" href="https://fonts.googleapis.com">
+	<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+	<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+	<link href="/assets/style.css" rel="stylesheet">
+	<title>webcron dashboard</title>
+</head>
+<body>
+	<nav class="app-navbar">
+		<div class="app-navbar__inner">
+			<a class="app-brand" href="/">
+				<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+					<circle cx="12" cy="12" r="9"></circle>
+					<path d="M12 7v5l3 2"></path>
+				</svg>
+				<span>webcron<small>&nbsp;&nbsp;job monitor</small></span>
+			</a>
+			<div class="app-nav-links">
+				<a href="/">Dashboard</a>
+			</div>
+		</div>
+	</nav>
+
 
 <script src="/assets/sparkline.js"></script>
 <script>
@@ -51,22 +78,22 @@ if (document.readyState === 'loading') {
 	<div class="stat-grid">
 		<div class="stat-card">
 			<div class="stat-label">Total jobs</div>
-			<div class="stat-value">{summary.total}</div>
+			<div class="stat-value">2</div>
 			<div class="stat-hint">tracked in crontab</div>
 		</div>
 		<div class="stat-card">
 			<div class="stat-label">Scheduled</div>
-			<div class="stat-value">{summary.scheduled}</div>
-			<div class="stat-hint">{summary.onetime} one-time</div>
+			<div class="stat-value">2</div>
+			<div class="stat-hint">0 one-time</div>
 		</div>
 		<div class="stat-card is-ok">
 			<div class="stat-label">Healthy</div>
-			<div class="stat-value">{summary.healthy}</div>
+			<div class="stat-value">0</div>
 			<div class="stat-hint">last run exit 0</div>
 		</div>
 		<div class="stat-card is-fail">
 			<div class="stat-label">Failing</div>
-			<div class="stat-value">{summary.failing}</div>
+			<div class="stat-value">1</div>
 			<div class="stat-hint">last run non-zero</div>
 		</div>
 	</div>
@@ -87,37 +114,7 @@ if (document.readyState === 'loading') {
 				</tr>
 			</thead>
 			<tbody>
-			{foreach $body['jobs'] as $k => $job}
-				{if $job['active'] == 1 && strpos($job['name'], "onetime/") !== false}
-				<tr>
-					<td class="job-name">
-						<div class="job-name__row">
-							<a href="/{$job['name']}"><code>{$job['name']}</code></a>
-							<button class="icon-btn" type="button" title="Edit description" data-name="{$job['name']}" data-desc="{$job['description']}" onclick="openDescModal(this)" aria-label="Edit description">
-								<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"></path><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"></path></svg>
-							</button>
-						</div>
-						{if !empty($job['description'])}<div class="job-desc">{$job['description']}</div>{/if}
-					</td>
-					{if !empty($job['lastRun'])}
-					<td>{if $job['lastRun']['exitCode'] == 0}<span class="badge badge-ok">OK</span>{else}<span class="badge badge-fail">Exit: {$job['lastRun']['exitCode']}</span>{/if}</td>
-					<td>
-						<div class="sparkline-box">
-							<svg class="sparkline" width="240" height="28" stroke-width="2" {if $job['lastRun']['exitCode'] == 0}stroke="#16a34a" fill="rgba(22,163,74,0.12)"{else}stroke="#dc2626" fill="rgba(220,38,38,0.12)"{/if} data-history='{$job['history']|history}'></svg>
-							<span class="spark-tooltip" hidden="true"></span>
-						</div>
-					</td>
-					<td class="mono">{eval echo sprintf("%.3fs", $job['lastRun']['duration'])}</td>
-					<td class="mono">{eval echo date("Y-m-d H:i:s", strtotime($job['lastRun']['stamp']))}</td>
-					{else}
-					<td colspan="4" class="empty-cell">No run history yet</td>
-					{/if}
-				</tr>
-				{/if}
-			{else}
-				<tr><td colspan="5" class="empty-cell">No jobs found.</td></tr>
-			{/foreach}
-			</tbody>
+																				</tbody>
 			</table>
 		</div>
 	</section>
@@ -138,37 +135,41 @@ if (document.readyState === 'loading') {
 				</tr>
 			</thead>
 			<tbody>
-			{foreach $body['jobs'] as $k => $job}
-				{if $job['active'] == 1 && strpos($job['name'], "onetime/") === false}
+							
 				<tr>
 					<td class="job-name">
 						<div class="job-name__row">
-							<a href="/{$job['name']}"><code>{$job['name']}</code></a>
-							<button class="icon-btn" type="button" title="Edit description" data-name="{$job['name']}" data-desc="{$job['description']}" onclick="openDescModal(this)" aria-label="Edit description">
+							<a href="/api_stats"><code>api_stats</code></a>
+							<button class="icon-btn" type="button" title="Edit description" data-name="api_stats" data-desc="" onclick="openDescModal(this)" aria-label="Edit description">
 								<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"></path><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"></path></svg>
 							</button>
 						</div>
-						{if !empty($job['description'])}<div class="job-desc">{$job['description']}</div>{/if}
-					</td>
-					{if !empty($job['lastRun'])}
-					<td>{if $job['lastRun']['exitCode'] == 0}<span class="badge badge-ok">OK</span>{else}<span class="badge badge-fail">Exit: {$job['lastRun']['exitCode']}</span>{/if}</td>
+											</td>
+					
+					<td colspan="4" class="empty-cell">No run history yet</td>
+									</tr>
+											
+				<tr>
+					<td class="job-name">
+						<div class="job-name__row">
+							<a href="/esc&quot;job&lt;i&gt;"><code>esc&quot;job&lt;i&gt;</code></a>
+							<button class="icon-btn" type="button" title="Edit description" data-name="esc&quot;job&lt;i&gt;" data-desc="desc a&quot;b&lt;i&gt;" onclick="openDescModal(this)" aria-label="Edit description">
+								<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"></path><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"></path></svg>
+							</button>
+						</div>
+						<div class="job-desc">desc a&quot;b&lt;i&gt;</div>					</td>
+					
+					<td><span class="badge badge-fail">Exit: 123</span></td>
 					<td>
 						<div class="sparkline-box">
-							<svg class="sparkline" width="240" height="28" stroke-width="2" {if $job['lastRun']['exitCode'] == 0}stroke="#16a34a" fill="rgba(22,163,74,0.12)"{else}stroke="#dc2626" fill="rgba(220,38,38,0.12)"{/if} data-history='{$job['history']|history}'></svg>
+							<svg class="sparkline" width="240" height="28" stroke-width="2" stroke="#dc2626" fill="rgba(220,38,38,0.12)" data-history='[{&quot;name&quot;:&quot;Exit: 0&quot;,&quot;date&quot;:&quot;2026-08-26T12:00:01Z&quot;,&quot;value&quot;:3.5},{&quot;name&quot;:&quot;Exit: 0&quot;,&quot;date&quot;:&quot;2026-08-26T12:00:02Z&quot;,&quot;value&quot;:2.5},{&quot;name&quot;:&quot;Exit: 123&quot;,&quot;date&quot;:&quot;2026-08-26T12:00:03Z&quot;,&quot;value&quot;:1.5}]'></svg>
 							<span class="spark-tooltip" hidden="true"></span>
 						</div>
 					</td>
-					<td class="mono">{eval echo sprintf("%.3fs", $job['lastRun']['duration'])}</td>
-					<td class="mono">{eval echo date("Y-m-d H:i:s", strtotime($job['lastRun']['stamp']))}</td>
-					{else}
-					<td colspan="4" class="empty-cell">No run history yet</td>
-					{/if}
-				</tr>
-				{/if}
-			{else}
-				<tr><td colspan="5" class="empty-cell">No jobs found.</td></tr>
-			{/foreach}
-			</tbody>
+					<td class="mono">1.500s</td>
+					<td class="mono">1970-01-01 01:00:00</td>
+									</tr>
+										</tbody>
 			</table>
 		</div>
 	</section>
@@ -236,4 +237,10 @@ document.addEventListener('keydown', function (event) {
 });
 </script>
 
-{load html_footer.tpl}
+	<footer class="app-footer">
+		webcron &middot; a crontab-like executor with an API &middot;
+		<a href="https://titpetric.com" rel="noopener">Tit Petric</a>
+	</footer>
+</body>
+</html>
+

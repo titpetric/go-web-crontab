@@ -4,7 +4,7 @@ import (
 	"bufio"
 	"context"
 	"fmt"
-	"log"
+	"log/slog"
 	"os"
 	"path/filepath"
 	"regexp"
@@ -17,6 +17,7 @@ import (
 )
 
 type Crontab struct {
+	logger     *slog.Logger
 	storage    *storage.Storage
 	scheduler  *cron.Cron
 	scriptPath string
@@ -24,10 +25,11 @@ type Crontab struct {
 	Jobs *Jobs
 }
 
-func NewCrontab(db *sqlx.DB) (*Crontab, error) {
+func NewCrontab(logger *slog.Logger, db *sqlx.DB) (*Crontab, error) {
 	var err error
 
 	cron := &Crontab{
+		logger:  logger,
 		storage: storage.NewStorage(db),
 		scheduler: cron.New(
 			cron.WithParser(
@@ -49,12 +51,12 @@ func NewCrontab(db *sqlx.DB) (*Crontab, error) {
 func (cron *Crontab) Start() error {
 	var jobs = cron.Jobs.jobs
 
-	log.Println("Starting up job runners")
+	cron.logger.Info("starting job runners", "jobs", len(jobs))
 	for idx, _ := range jobs {
 		job := jobs[idx]
 		runFunc := func() {
 			if err := job.Run(cron); err != nil {
-				log.Printf("error when running job: %+v", err)
+				cron.logger.Error("job failed", "job", job.Name, "error", err)
 			}
 		}
 
@@ -92,7 +94,7 @@ func (cron *Crontab) Load(configPath, scriptPath string) error {
 }
 
 func (cron *Crontab) loadConfig(ctx context.Context, filename, scriptPath string) error {
-	log.Println("Loading config:", filename)
+	cron.logger.Info("loading config", "file", filename)
 	file, err := os.Open(filename)
 	if err != nil {
 		return err
@@ -143,7 +145,7 @@ func (cron *Crontab) loadConfig(ctx context.Context, filename, scriptPath string
 
 		cron.Jobs.jobs = append(cron.Jobs.jobs, job)
 
-		log.Println("Line:", lineExp)
+		cron.logger.Info("loaded job", "job", job.Name, "host", job.Hostname, "schedule", job.Schedule, "line", marker)
 	}
 
 	return scanner.Err()

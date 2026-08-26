@@ -122,8 +122,12 @@ func (m *Module) Mount(ctx context.Context, r platform.Router) error {
 	routes := annotations.NewRoute(m.root, annotations.WithRuntimeFunc(func(rt *runner.Runtime) {
 		rt.SetIncludeCache(m.includeCache)
 		rt.SetExprCache(m.exprCache)
-		stdlib.RegisterFS(rt, m.cacheRoot)
 		stdlib.Register(rt)
+		// After stdlib.Register, which installs a root of its own: the file
+		// shims have to land on the cache directory, or minitpl compiles its
+		// templates into the working directory while include() keeps reading
+		// through the embedded filesystem and never finds them.
+		stdlib.RegisterFS(rt, m.cacheRoot)
 		registerHelpers(rt)
 	}))
 	if err := routes.RegisterMux(phpMux); err != nil {

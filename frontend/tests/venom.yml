@@ -1,0 +1,162 @@
+name: webcron dashboard escaping
+
+# minitpl escapes by markup context, so no template in frontend/templates names
+# an escape filter of its own. That makes the escaping invisible in the source,
+# and a template that quietly stopped escaping would look exactly the same. So
+# every case here is a pair: the escaped form has to be present and the raw form
+# has to be absent. A suite that only counted the escaped form would still pass
+# on a page that printed both.
+#
+# The steps are `exec` with curl rather than the http executor because the
+# assertions count occurrences in the body, and a count is easier to state as a
+# labelled number than as a substring of html.
+#
+# The fixture job is named `esc"job<i>` and described `desc a"b<i>`. Both carry
+# the double quote that delimits the attributes they land in, so an unescaped
+# value would close its attribute and add markup rather than merely look wrong.
+
+vars:
+  host: http://127.0.0.1:18080
+  job: "esc%22job%3Ci%3E"
+
+testcases:
+  - name: the index page escapes a job name in a text node and in an attribute
+    steps:
+      - type: exec
+        script: |
+          set -e
+          curl -sS {{.host}}/ > index.html
+
+          # The name is printed twice on the row: inside <code> as text, and as
+          # the value of data-name on the edit button.
+          grep -c '<code>esc&quot;job&lt;i&gt;</code>' index.html | sed "s/^/TEXT /"
+          grep -c 'data-name="esc&quot;job&lt;i&gt;"' index.html | sed "s/^/ATTR /"
+
+          # Unescaped, the quote would end data-name and the rest of the value
+          # would be parsed as further attributes and a tag.
+          grep -c 'data-name="esc"job<i>"' index.html | sed "s/^/RAWATTR /" || true
+          grep -c '<code>esc"job<i></code>' index.html | sed "s/^/RAWTEXT /" || true
+        assertions:
+          - result.code ShouldEqual 0
+          - result.systemout ShouldContainSubstring "TEXT 1"
+          - result.systemout ShouldContainSubstring "ATTR 1"
+          - result.systemout ShouldContainSubstring "RAWATTR 0"
+          - result.systemout ShouldContainSubstring "RAWTEXT 0"
+
+  - name: the index page escapes a description in both places it is printed
+    steps:
+      - type: exec
+        script: |
+          set -e
+          curl -sS {{.host}}/ > desc.html
+
+          grep -c 'data-desc="desc a&quot;b&lt;i&gt;"' desc.html | sed "s/^/ATTR /"
+          grep -c '<div class="job-desc">desc a&quot;b&lt;i&gt;</div>' desc.html | sed "s/^/TEXT /"
+
+          grep -c 'data-desc="desc a"b<i>"' desc.html | sed "s/^/RAWATTR /" || true
+        assertions:
+          - result.code ShouldEqual 0
+          - result.systemout ShouldContainSubstring "ATTR 1"
+          - result.systemout ShouldContainSubstring "TEXT 1"
+          - result.systemout ShouldContainSubstring "RAWATTR 0"
+
+  # The sparkline reads its data out of a single quoted attribute. Escaping in a
+  # single quoted attribute is new: before it, a value carrying an apostrophe
+  # ended the attribute, and the json in it was written out verbatim.
+  - name: the sparkline json is escaped inside its single quoted attribute
+    steps:
+      - type: exec
+        script: |
+          set -e
+          curl -sS {{.host}}/ > spark.html
+
+          grep -c "data-history='\[{&quot;name&quot;:" spark.html | sed "s/^/ESCAPED /"
+          grep -c "data-history='\[{\"name\":" spark.html | sed "s/^/RAW /" || true
+        assertions:
+          - result.code ShouldEqual 0
+          - result.systemout ShouldContainSubstring "ESCAPED 1"
+          - result.systemout ShouldContainSubstring "RAW 0"
+
+  - name: the job page escapes the job name in its heading and its data attribute
+    steps:
+      - type: exec
+        script: |
+          set -e
+          curl -sS -o job.html -w "STATUS %{http_code}\n" {{.host}}/{{.job}}
+
+          grep -c 'data-jobname="esc&quot;job&lt;i&gt;"' job.html | sed "s/^/ATTR /"
+          grep -c '<h2>esc&quot;job&lt;i&gt;</h2>' job.html | sed "s/^/HEAD /"
+          grep -c '<code>esc&quot;job&lt;i&gt;</code>' job.html | sed "s/^/CODE /"
+
+          grep -c 'data-jobname="esc"job<i>"' job.html | sed "s/^/RAWATTR /" || true
+        assertions:
+          - result.code ShouldEqual 0
+          - result.systemout ShouldContainSubstring "STATUS 200"
+          - result.systemout ShouldContainSubstring "ATTR 1"
+          - result.systemout ShouldContainSubstring "HEAD 1"
+          - result.systemout ShouldContainSubstring "CODE 1"
+          - result.systemout ShouldContainSubstring "RAWATTR 0"
+
+  # A script body is not markup, so escaping it would corrupt the javascript
+  # rather than protect it. Both charts are configured from json printed inside
+  # <script>, which is the one place on these pages that has to come out raw.
+  - name: chart json inside a script body is left unescaped
+    steps:
+      - type: exec
+        script: |
+          set -e
+          curl -sS {{.host}}/{{.job}} > charts.html
+
+          grep -c 'data: {"labels":' charts.html | sed "s/^/RAW /"
+          grep -c 'data: {&quot;labels&quot;:' charts.html | sed "s/^/ESCAPED /" || true
+        assertions:
+          - result.code ShouldEqual 0
+          - result.systemout ShouldContainSubstring "RAW 2"
+          - result.systemout ShouldContainSubstring "ESCAPED 0"
+
+  # The exit code badge is markup the template builds, not a value the page is
+  # handed. It used to arrive from index.php as a string of html, which escaping
+  # by context turns into visible text; the assertion below is what holds that
+  # rendering in the template where it belongs.
+  - name: the exit code badge is markup rather than escaped text
+    steps:
+      - type: exec
+        script: |
+          set -e
+          curl -sS {{.host}}/{{.job}} > badge.html
+
+          grep -c '<span class="badge badge-fail">Exit: 123</span>' badge.html | sed "s/^/FAIL /"
+          grep -c '<span class="badge badge-ok">OK</span>' badge.html | sed "s/^/OK /"
+          grep -c '&lt;span class="badge' badge.html | sed "s/^/ESCAPED /" || true
+        assertions:
+          - result.code ShouldEqual 0
+          - result.systemout ShouldContainSubstring "FAIL 1"
+          - result.systemout ShouldContainSubstring "OK 2"
+          - result.systemout ShouldContainSubstring "ESCAPED 0"
+
+  # Job output is the least trusted value on the dashboard: it is whatever a
+  # script wrote to its console. Both renderings are covered, because a log row
+  # holding json is shown line by line and one holding plain text is not.
+  - name: job output is escaped in both the structured and the plain rendering
+    steps:
+      - type: exec
+        script: |
+          set -e
+          curl -sS {{.host}}/{{.job}}/1 > structured.html
+          curl -sS {{.host}}/{{.job}}/2 > plain.html
+
+          grep -c 'structured &lt;script&gt;alert(2)&lt;/script&gt;' structured.html | sed "s/^/STRUCTURED /"
+          grep -c 'title="2026-08-26T12:00:03Z&quot;&lt;i&gt;"' structured.html | sed "s/^/TIMESTAMP /"
+          grep -c 'plain &lt;script&gt;alert(1)&lt;/script&gt;' plain.html | sed "s/^/PLAIN /"
+
+          # The payload is a script tag, so the negative half is the difference
+          # between output on the page and script running in the browser.
+          grep -c '<script>alert(1)</script>' plain.html | sed "s/^/RAWPLAIN /" || true
+          grep -c '<script>alert(2)</script>' structured.html | sed "s/^/RAWSTRUCTURED /" || true
+        assertions:
+          - result.code ShouldEqual 0
+          - result.systemout ShouldContainSubstring "STRUCTURED 1"
+          - result.systemout ShouldContainSubstring "TIMESTAMP 1"
+          - result.systemout ShouldContainSubstring "PLAIN 1"
+          - result.systemout ShouldContainSubstring "RAWPLAIN 0"
+          - result.systemout ShouldContainSubstring "RAWSTRUCTURED 0"

@@ -1,0 +1,61 @@
+# The suite runs against the real binary rather than the php sources, because
+# the templates are embedded and interpreted by phpscript in process: what a
+# browser gets is what web.Module compiles, and nothing else renders them.
+
+vars:
+  root: ../..
+  addr: 127.0.0.1:18080
+  host: http://127.0.0.1:18080
+  db: webcron-test.db
+
+jobs:
+  default:
+    aliases: [test]
+    desc: "Run the escaping suite against a freshly seeded webcron"
+    passthru: true
+    steps:
+      - task: build
+      - task: start
+      - defer: task stop
+      - task: seed
+      - venom run venom.yml --var=host=${{ host }}
+
+  build:
+    desc: "Build the binary under test"
+    steps:
+      # Compiled templates are keyed on the mtime of the template that was
+      # loaded, and an included partial is a compile-time paste that does not
+      # carry its own. An edited partial is invisible until the cache is gone,
+      # which looks exactly like the service not having restarted.
+      - rm -rf ${{ root }}/templates/cache/*.tpl
+      - go build -o ./webcron ${{ root }}/cmd/webcron
+
+  start:
+    desc: "Start webcron on a scratch database"
+    steps:
+      - rm -f ${{ db }} ${{ db }}-wal ${{ db }}-shm
+      # Crontab.Load refuses to start when its glob matches no file, so the
+      # fixture holds one job on a schedule that will not come around. The
+      # scripts directory is the repository's own, because the entry names a
+      # script that has to exist.
+      - >
+        PLATFORM_DB_CRONTAB='sqlite://${{ db }}?_time_format=sqlite'
+        WEB_ADDR='${{ addr }}'
+        CONFIG_PATH='testdata/cron.d/*.cron'
+        SCRIPT_PATH='${{ root }}/cron.scripts/'
+        setsid ./webcron > webcron.log 2>&1 < /dev/null &
+        echo $! > webcron.pid
+      # Wait on the port answering rather than on the process existing. The
+      # migrations create the schema on boot, and the seed below needs them.
+      - timeout 30 sh -c 'until curl -fsS -o /dev/null ${{ host }}/; do sleep 1; done'
+
+  seed:
+    desc: "Load the fixture rows the suite asserts on"
+    steps:
+      - sqlite3 ${{ db }} < testdata/seed.sql
+
+  stop:
+    desc: "Stop webcron and clear the scratch database"
+    steps:
+      - test -f webcron.pid && kill $(cat webcron.pid) 2>/dev/null; rm -f webcron.pid
+      - rm -f ${{ db }} ${{ db }}-wal ${{ db }}-shm

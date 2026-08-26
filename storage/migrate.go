@@ -3,32 +3,25 @@ package storage
 import (
 	"context"
 	"io/fs"
-	"path"
+	"log/slog"
 
 	"github.com/go-bridget/mig/migrate"
 	"github.com/jmoiron/sqlx"
 )
 
-// Migrate applies SQL migrations from the given filesystem to the database.
-func Migrate(ctx context.Context, db *sqlx.DB, schema fs.FS) error {
-	entries, err := fs.Glob(schema, "*.sql")
+// Migrate applies SQL migrations from the given filesystem to the database,
+// recording them under the project name "crontab". Files are selected by mig's
+// default "*.up.sql" pattern. The logger reports the filename and status of
+// every migration the run touched; mig writes no output of its own.
+func Migrate(ctx context.Context, logger *slog.Logger, db *sqlx.DB, schema fs.FS) error {
+	m, err := migrate.NewManager(db, schema, "crontab")
 	if err != nil {
 		return err
 	}
 
-	migrations := make(map[string][]byte, len(entries))
-	for _, name := range entries {
-		contents, _ := fs.ReadFile(schema, name)
-		migrations[path.Base(name)] = contents
+	applied, err := m.Apply(ctx)
+	for _, item := range applied {
+		logger.Info("migration", "file", item.Filename, "status", item.Status)
 	}
-
-	return migrate.RunWithFS(
-		ctx,
-		db,
-		migrations,
-		&migrate.Options{
-			Project: "crontab",
-			Apply:   true,
-		},
-	)
+	return err
 }

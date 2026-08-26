@@ -1,0 +1,7 @@
+# Crontab.Load errors when its glob matches no file, so the suite needs one
+# entry to get the service past startup. The schedule is the first minute of
+# the first of January, which will not come around while the suite runs, and
+# the script is one of the repository's own so the existence check passes.
+
+# server, minute, hour, day, month, dayofweek, user, script
+api1	0	0	1	1	*	root	api_stats
