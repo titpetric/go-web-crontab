@@ -4,14 +4,14 @@ go 1.27.0
 
 require (
 	github.com/apex/log v1.9.0
-	github.com/go-bridget/mig v0.6.2
+	github.com/go-bridget/mig v0.6.3
 	github.com/jmoiron/sqlx v1.4.0
 	github.com/namsral/flag v1.7.4-pre
 	github.com/robfig/cron/v3 v3.0.1
 	github.com/titpetric/pdo v0.2.5
 	github.com/titpetric/phpscript v0.4.1
 	github.com/titpetric/platform v0.7.2
-	golang.org/x/net v0.58.0
+	golang.org/x/net v0.59.0
 	modernc.org/sqlite v1.58.0
 )
 
@@ -31,9 +31,9 @@ require (
 	github.com/remyoudompheng/bigfft v0.0.0-20230129092748-24d4a6f8daec // indirect
 	github.com/spf13/pflag v1.0.10 // indirect
 	github.com/titpetric/oida v0.3.0 // indirect
-	golang.org/x/crypto v0.56.0 // indirect
-	golang.org/x/image v0.45.0 // indirect
-	golang.org/x/sys v0.47.0 // indirect
+	golang.org/x/crypto v0.57.0 // indirect
+	golang.org/x/image v0.46.0 // indirect
+	golang.org/x/sys v0.48.0 // indirect
 	modernc.org/libc v1.75.7 // indirect
 	modernc.org/mathutil v1.7.1 // indirect
 	modernc.org/memory v1.12.1 // indirect
