@@ -4,7 +4,7 @@ go 1.27.0
 
 require (
 	github.com/apex/log v1.9.0
-	github.com/go-bridget/mig v0.6.3
+	github.com/go-bridget/mig v0.6.5
 	github.com/jmoiron/sqlx v1.4.0
 	github.com/namsral/flag v1.7.4-pre
 	github.com/robfig/cron/v3 v3.0.1
@@ -30,7 +30,7 @@ require (
 	github.com/pkg/errors v0.9.1 // indirect
 	github.com/remyoudompheng/bigfft v0.0.0-20230129092748-24d4a6f8daec // indirect
 	github.com/spf13/pflag v1.0.10 // indirect
-	github.com/titpetric/oida v0.3.0 // indirect
+	github.com/titpetric/oida v0.4.0 // indirect
 	golang.org/x/crypto v0.57.0 // indirect
 	golang.org/x/image v0.46.0 // indirect
 	golang.org/x/sys v0.48.0 // indirect
