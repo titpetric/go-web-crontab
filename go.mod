@@ -10,7 +10,7 @@ require (
 	github.com/robfig/cron/v3 v3.0.1
 	github.com/titpetric/pdo v0.2.5
 	github.com/titpetric/phpscript v0.5.0
-	github.com/titpetric/platform v0.7.3
+	github.com/titpetric/platform v0.7.4
 	golang.org/x/net v0.59.0
 	modernc.org/sqlite v1.59.0
 )
@@ -34,7 +34,7 @@ require (
 	golang.org/x/crypto v0.57.0 // indirect
 	golang.org/x/image v0.46.0 // indirect
 	golang.org/x/sys v0.48.0 // indirect
-	modernc.org/libc v1.77.0 // indirect
+	modernc.org/libc v1.77.1 // indirect
 	modernc.org/mathutil v1.7.1 // indirect
 	modernc.org/memory v1.12.1 // indirect
 )
