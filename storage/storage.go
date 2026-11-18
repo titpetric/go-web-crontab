@@ -2,9 +2,9 @@ package storage
 
 import (
 	"context"
+	"database/sql"
 	"time"
 
-	"github.com/jmoiron/sqlx"
 	"github.com/titpetric/go-web-crontab/model"
 	"github.com/titpetric/pdo"
 )
@@ -13,9 +13,9 @@ type Storage struct {
 	db *pdo.PDO
 }
 
-func NewStorage(handle *sqlx.DB) *Storage {
+func NewStorage(handle *sql.DB) *Storage {
 	return &Storage{
-		db: pdo.New(handle.DB),
+		db: pdo.New(handle),
 	}
 }
 
