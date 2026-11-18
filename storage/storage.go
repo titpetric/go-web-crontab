@@ -15,7 +15,7 @@ type Storage struct {
 
 func NewStorage(handle *sqlx.DB) *Storage {
 	return &Storage{
-		db: pdo.New(handle),
+		db: pdo.New(handle.DB),
 	}
 }
 
