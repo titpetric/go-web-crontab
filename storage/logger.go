@@ -2,6 +2,7 @@ package storage
 
 import (
 	"context"
+	stdjson "encoding/json"
 	"fmt"
 	"os"
 	"os/exec"
@@ -11,7 +12,6 @@ import (
 	"github.com/apex/log"
 	"github.com/apex/log/handlers/cli"
 	"github.com/apex/log/handlers/json"
-	"github.com/jmoiron/sqlx/types"
 )
 
 // Log provides methods for easy logging. This should be used for each
@@ -39,11 +39,11 @@ type Log struct {
 
 // LogEntry is one log SQL entry
 type LogEntry struct {
-	Name     string         `db:"name"`
-	ExitCode int            `db:"exit_code"`
-	Output   types.JSONText `db:"output"`
-	Stamp    time.Time      `db:"stamp"`
-	Duration time.Duration  `db:"duration"`
+	Name     string             `db:"name"`
+	ExitCode int                `db:"exit_code"`
+	Output   stdjson.RawMessage `db:"output"`
+	Stamp    time.Time          `db:"stamp"`
+	Duration time.Duration      `db:"duration"`
 }
 
 // NewLog creates a new logger
@@ -183,14 +183,9 @@ func (l *Log) Finish(storage *Storage, err error) (*LogEntry, error) {
 	dbLog := &LogEntry{
 		Name:     l.jobname,
 		ExitCode: exitCode,
-		Output:   types.JSONText{},
+		Output:   stdjson.RawMessage(l.jsonWriter.String()),
 		Stamp:    l.start,
 		Duration: time.Since(l.start),
-	}
-
-	// Scan the outputs into the JSON
-	if err := dbLog.Output.Scan(l.jsonWriter.String()); err != nil {
-		return nil, fmt.Errorf("Couldn't scan JSON: %w", err)
 	}
 
 	ctx := context.Background()

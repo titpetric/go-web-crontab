@@ -3,6 +3,7 @@ package crontab
 import (
 	"bufio"
 	"context"
+	"database/sql"
 	"fmt"
 	"log/slog"
 	"os"
@@ -11,7 +12,6 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/jmoiron/sqlx"
 	"github.com/robfig/cron/v3"
 	"github.com/titpetric/go-web-crontab/storage"
 )
@@ -25,7 +25,7 @@ type Crontab struct {
 	Jobs *Jobs
 }
 
-func NewCrontab(logger *slog.Logger, db *sqlx.DB) (*Crontab, error) {
+func NewCrontab(logger *slog.Logger, db *sql.DB) (*Crontab, error) {
 	var err error
 
 	cron := &Crontab{
